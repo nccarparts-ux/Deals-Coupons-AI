@@ -23,7 +23,12 @@
     "qa:resume": "node qa/resume-testing.js",
     "qa:autonomous": "node qa/autonomous.js",
     "qa:functional": "node qa/functional-test.js",
-    "qa:add-issues": "node qa/add-current-issues.js"
+    "qa:add-issues": "node qa/add-current-issues.js",
+    "optimize:token-check": "node scripts/token-monitor.js",
+    "optimize:split-task": "node scripts/task-splitter.js",
+    "optimize:large-task": "cp .env.large-task .env",
+    "optimize:quick-task": "cp .env.quick-task .env",
+    "optimize:qa-task": "cp .env.qa-testing .env"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",

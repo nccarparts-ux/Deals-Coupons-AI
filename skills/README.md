@@ -39,12 +39,24 @@ Complete deployment guide for Vercel, covering project setup, environment config
 - Monitoring & Logs
 - Deals-Coupons-AI Integration
 
+### 4. [Token Optimization](token-optimization.md)
+Comprehensive guide to optimizing token usage with Claude Code and DeepSeek API, preventing "API error 400" and maximizing productivity with parallel agents.
+
+**Key Sections:**
+- Environment Configuration & Presets
+- Parallel Agent Execution Patterns
+- Token Usage Monitoring Scripts
+- Practical Optimization Techniques
+- Claude Code Settings Optimization
+- Troubleshooting Common Errors
+
 ## 🎯 How to Use These Skill Files
 
 ### For New Developers
 1. Start with the **Supabase CLI** guide to set up local development
 2. Review **Playwright Testing** to understand the test suite
 3. Check **Vercel Deployment** for production deployment steps
+4. Read **Token Optimization** to prevent API errors and maximize efficiency
 
 ### For Daily Development
 - Use as quick reference for command syntax
@@ -88,6 +100,11 @@ npm run test:ui
 # Vercel deployment
 vercel login
 npm run vercel:deploy
+
+# Token optimization
+node scripts/token-monitor.js "Task description" "*.html"
+node scripts/task-splitter.js "Large task" --glob "**/*.html" "**/*.js"
+cp .env.large-task .env  # Switch to large task profile
 ```
 
 ## 🤝 Contributing
