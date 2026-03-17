@@ -25,6 +25,7 @@ __pycache__/
 !CLAUDE.md
 !ADMIN_SETUP.md
 !SKILLS_SUMMARY.md
+!skills/*.md
 context.txt
 complete_response.txt
 .ai_memory.json
