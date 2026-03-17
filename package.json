@@ -1,0 +1,32 @@
+{
+  "name": "Deals-Coupons-AI",
+  "devDependencies": {
+    "@playwright/test": "^1.58.1",
+    "serve": "^14.2.4",
+    "supabase": "^2.78.1"
+  },
+  "scripts": {
+    "dev": "serve . -p 3000",
+    "start": "npm run dev",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:production": "playwright test --config=playwright.config.production.js",
+    "playwright:install": "playwright install",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:status": "supabase status",
+    "vercel:deploy": "vercel",
+    "vercel:prod": "vercel --prod",
+    "qa:resume": "node qa/resume-testing.js",
+    "qa:autonomous": "node qa/autonomous.js",
+    "qa:functional": "node qa/functional-test.js",
+    "qa:add-issues": "node qa/add-current-issues.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.1",
+    "dotenv": "^17.3.1"
+  }
+}
