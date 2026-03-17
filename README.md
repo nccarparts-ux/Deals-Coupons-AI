@@ -19,6 +19,31 @@ This template provides a complete development environment setup for Deals-Coupon
 4. **Configure environment variables**
 5. **Link your Supabase and Vercel projects**
 
+## Claude Code Integration (ccd command)
+
+This project includes batch files (`c.bat` and `ccd.bat`) to launch Claude Code with DeepSeek configuration:
+
+```bash
+# Windows Command Prompt or PowerShell (in project directory):
+c          # Shortcut: launches Claude Code with DeepSeek config
+ccd        # Same as above, shows configuration verification
+
+# Git Bash or WSL:
+./c.bat
+./ccd.bat
+```
+
+The `ccd.bat` file:
+1. Changes to the project directory
+2. Loads environment variables from `.env`
+3. Verifies DeepSeek configuration (Base URL and Model)
+4. Launches Claude Code with proper authentication
+
+**Requirements:**
+- Claude Code installed globally (`npm install -g @anthropic-ai/claude-code`)
+- Valid DeepSeek API key in `.env` file
+- Windows environment (for batch files) or use WSL/Git Bash
+
 ## Detailed Setup Instructions
 
 ### 1. Copy Template Files

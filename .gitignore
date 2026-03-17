@@ -42,6 +42,8 @@ complete_response.txt
 .claude/
 
 # Temporary deployment and test files
+!c.bat
+!ccd.bat
 *.bat
 *.log
 *.JPG
