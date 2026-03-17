@@ -6,7 +6,7 @@
     "supabase": "^2.78.1"
   },
   "scripts": {
-    "dev": "serve . -p 3000",
+    "dev": "serve . -p 3001",
     "start": "npm run dev",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

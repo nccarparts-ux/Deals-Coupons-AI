@@ -8,8 +8,8 @@ test('main page loads', async ({ page }) => {
 
   // Check for presence of key page elements
   await expect(page.locator('header')).toBeVisible();
-  await expect(page.locator('nav')).toBeVisible();
   await expect(page.locator('.hero')).toBeVisible();
+  await expect(page.locator('.features')).toBeVisible();
 });
 
 test('admin panel redirects when not authenticated', async ({ page }) => {
@@ -31,13 +31,11 @@ test('seller dashboard redirects when not authenticated', async ({ page }) => {
 });
 
 test('key pages are accessible', async ({ page }) => {
-  // Test several important pages
+  // Test pages that actually exist in this project
   const pages = [
     { path: '/index.html', name: 'Main page' },
-    { path: '/page1.html', name: 'Page 1' },
-    { path: '/page2.html', name: 'Page 2' },
-    { path: '/dashboard.html', name: 'Dashboard' },
-    { path: '/profile.html', name: 'Profile' },
+    { path: '/admin-panel.html', name: 'Admin panel' },
+    { path: '/seller-dashboard.html', name: 'Seller dashboard' },
   ];
 
   for (const pageInfo of pages) {
