@@ -45,9 +45,10 @@ complete_response.txt
 .claude/
 
 # Temporary deployment and test files
+*.bat
 !c.bat
 !ccd.bat
-*.bat
+!start_deal_sniper.bat
 *.log
 *.JPG
 *.jpg
