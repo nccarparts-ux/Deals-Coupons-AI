@@ -1,0 +1,109 @@
+[project]
+name = "deal-sniper-ai"
+version = "0.1.0"
+description = "Autonomous Deal Sniper AI Platform for monitoring ecommerce prices and detecting extreme deals"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Deals-Coupons-AI Team"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Web framework and API
+    "fastapi==0.115.4",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.10.3",
+
+    # Database and ORM (SQLAlchemy for models, Supabase for cloud, SQLite for local fallback)
+    "sqlalchemy==2.0.36",
+    "aiosqlite==0.20.0",  # For SQLite async operations
+    "supabase==2.3.1",    # Supabase Python client for REST API
+
+    # Task queue and caching
+    "celery==5.4.0",
+    "redis==5.2.0",
+    "flower==2.0.1",  # Celery monitoring
+
+    # Web scraping and browser automation
+    "playwright==1.49.0",
+    "beautifulsoup4==4.12.3",
+    "lxml==5.3.0",
+    "requests==2.32.3",
+    "aiohttp==3.10.11",
+
+    # Data analysis and ML
+    "numpy==1.26.4",
+    "pandas==2.2.3",
+    "scikit-learn==1.5.1",
+    "scipy==1.14.1",
+
+    # Configuration and utilities
+    "pyyaml==6.0.2",
+    "python-dotenv==1.0.1",
+    "python-multipart==0.0.16",
+
+    # Telegram/Discord APIs
+    "python-telegram-bot==21.10",
+    "discord.py==2.4.1",
+
+    # Monitoring and logging
+    "structlog==24.4.0",
+    "prometheus-client==0.21.0",
+
+    # Date/time
+    "pytz==2024.2",
+    "python-dateutil==2.9.0.post0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "pytest-asyncio==0.23.7",
+    "pytest-cov==5.0.0",
+    "black==24.10.0",
+    "isort==5.13.2",
+    "flake8==7.1.1",
+    "mypy==1.11.2",
+    "pre-commit==3.8.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers --strict-config"
+markers = [
+    "integration: integration tests that require external services",
+    "slow: tests that take longer than 5 seconds",
+    "crawler: tests for web crawler functionality",
+]
+
+[project.scripts]
+deal-sniper-api = "deal_sniper_ai.api.main:main"
+deal-sniper-worker = "deal_sniper_ai.scheduler.celery_app:start_worker"
+deal-sniper-beat = "deal_sniper_ai.scheduler.celery_app:start_beat"
+deal-sniper-crawl = "deal_sniper_ai.crawler.ecommerce_crawler:main"

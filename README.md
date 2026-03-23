@@ -207,3 +207,120 @@ Deals-Coupons-AI/
 ## Support
 
 For issues with this template, refer to the original project at [GitHub Repository](https://github.com/your-repo).
+
+## Social Expansion Setup
+
+This section covers the Phase-9/12 social platform expansion — Facebook, Pinterest,
+Twitter/X (expanded), TikTok (Pexels video), email digest (Buttondown), and a
+GitHub Pages blog.
+
+### New .env Variables
+
+Add the following to your `.env` file:
+
+```
+# Facebook
+FACEBOOK_PAGE_ID=your_page_id
+FACEBOOK_ACCESS_TOKEN=your_token
+FACEBOOK_TOKEN_ISSUED_AT=YYYY-MM-DD
+
+# Pinterest
+PINTEREST_ACCESS_TOKEN=your_token
+
+# TikTok (Pexels for video backgrounds)
+PEXELS_API_KEY=your_key
+
+# Email Digest
+BUTTONDOWN_API_KEY=your_key
+
+# Blog
+BLOG_BASE_URL=https://yourusername.github.io/deals
+```
+
+### How to Get Each API Token
+
+**Twitter/X**
+1. Go to [developers.twitter.com](https://developers.twitter.com) and sign in.
+2. Create a new App (or use an existing one) under a Project.
+3. Go to App Settings → Keys and Tokens.
+4. Click "Generate" next to Access Token and Access Token Secret.
+
+**Facebook**
+1. Go to [developers.facebook.com](https://developers.facebook.com) and sign in.
+2. Create an App (Business type) and add the "Pages" product.
+3. Open Graph API Explorer → select your App and your Page.
+4. Click "Generate Access Token" and exchange it for a long-lived Page Access Token
+   (valid 60 days; re-generate before `FACEBOOK_TOKEN_ISSUED_AT` + 60 days).
+
+**Pinterest**
+1. Go to [developers.pinterest.com](https://developers.pinterest.com) → My Apps.
+2. Connect your app and navigate to Access Tokens.
+3. Click Generate Token with scopes: `boards:read`, `boards:write`, `pins:read`, `pins:write`.
+4. Copy the token into `PINTEREST_ACCESS_TOKEN`.
+
+**Pexels (TikTok video backgrounds)**
+1. Go to [pexels.com/api](https://www.pexels.com/api/) and sign in.
+2. Fill in the request form — approval is instant and free.
+3. Copy your API key into `PEXELS_API_KEY` (200 requests/hour on the free plan).
+
+**Buttondown (Email Digest)**
+1. Create a free account at [buttondown.email](https://buttondown.email).
+2. Go to Settings → API Keys.
+3. Generate a new key and add it to `BUTTONDOWN_API_KEY`.
+   (Free tier supports up to 100 subscribers.)
+
+### GitHub Pages Blog Setup
+
+1. Push your repository to GitHub (if not already done).
+2. In GitHub: Settings → Pages → Source: branch `main`, folder `/deal_sniper_ai/growth_engine/blog`.
+3. Set `BLOG_BASE_URL` in `.env` to your GitHub Pages URL
+   (e.g. `https://yourusername.github.io/deals`).
+4. After first publish, submit `{BLOG_BASE_URL}/sitemap.xml` in
+   [Google Search Console](https://search.google.com/search-console) to accelerate indexing.
+
+### How to Check Social Posting Status
+
+- Open `http://127.0.0.1:8001/social` in your browser.
+- The social dashboard shows:
+  - Live post counts per platform
+  - Next scheduled posts for each platform
+  - Top deal in the current queue
+  - TikTok video generation queue
+  - Recent errors per platform
+- The **Kill Switch** button on that page pauses all new platform tasks
+  without stopping Telegram posting.
+
+### Startup Commands
+
+```bash
+# Normal start (all platforms)
+start_deal_sniper.bat
+
+# Test mode (new platforms simulate only — Telegram still posts)
+start_deal_sniper.bat --dry-run
+
+# New platforms only (posting + growth Celery queues)
+start_deal_sniper.bat --social-only
+
+# Emergency stop for new platforms (Telegram unaffected)
+start_deal_sniper.bat --kill-social
+```
+
+Or using Python directly:
+
+```bash
+python scripts/start_sniper.py all --dry-run
+python scripts/start_sniper.py all --social-only
+python scripts/start_sniper.py --kill-social
+```
+
+### Dry-Run Mode Details
+
+When `--dry-run` is passed:
+- Sets environment variable `DEAL_SNIPER_DRY_RUN=1`.
+- Each new platform poster checks `deal_sniper_ai.posting_engine.dry_run.is_dry_run()`
+  at the top of its `post()` method and returns
+  `{'success': True, 'platform': '<name>', 'dry_run': True}` without hitting any API.
+- Telegram posting is **not** affected and continues normally.
+- The `run_with_dry_run_check()` wrapper in `scripts/start_sniper.py` can be used
+  in tests or tasks when the poster file cannot be edited directly.

@@ -1,0 +1,139 @@
+# Prometheus configuration for Deal Sniper AI Platform
+#
+# This configuration collects metrics from:
+# - FastAPI application (/api/metrics endpoint)
+# - PostgreSQL database
+# - Redis
+# - System metrics (node_exporter)
+# - Celery workers (flower or custom metrics)
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'deal-sniper-ai'
+    environment: 'production'
+
+# Alerting rules
+rule_files:
+  - 'alerts.yml'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - localhost:9093
+
+# Scrape configurations
+scrape_configs:
+  # Deal Sniper AI API
+  - job_name: 'deal-sniper-api'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+      - source_labels: [__address__]
+        target_label: job
+        regex: '.*'
+        replacement: 'deal-sniper-api'
+
+  # PostgreSQL
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['localhost:9187']  # postgres_exporter default port
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Redis
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:9121']  # redis_exporter default port
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    params:
+      check-keys: ['*']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Node exporter (system metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Celery Flower (task monitoring)
+  - job_name: 'celery-flower'
+    static_configs:
+      - targets: ['localhost:5555']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    metrics_path: '/metrics'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Blackbox exporter (external service monitoring)
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://localhost:8000/api/health  # API health check
+        - http://localhost:8000  # API root
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115  # blackbox_exporter default port
+
+  # cAdvisor (container monitoring if using Docker)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['localhost:8080']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+# Remote write configuration (optional - for long-term storage)
+remote_write:
+  - url: "http://localhost:8086/api/v1/prom/write?db=prometheus"
+    basic_auth:
+      username: "admin"
+      password: "admin"
+
+# Remote read configuration (optional)
+remote_read:
+  - url: "http://localhost:8086/api/v1/prom/read?db=prometheus"
+    basic_auth:
+      username: "admin"
+      password: "admin"

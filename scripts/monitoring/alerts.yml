@@ -1,0 +1,359 @@
+# Alerting rules for Deal Sniper AI Platform
+#
+# These rules define conditions that trigger alerts when metrics
+# indicate problems with the system.
+
+groups:
+  # System alerts
+  - name: system_alerts
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for 5 minutes on {{ $labels.instance }}"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for 5 minutes on {{ $labels.instance }}"
+
+      # High disk usage
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_free_bytes{fstype!="tmpfs"}) / node_filesystem_size_bytes{fstype!="tmpfs"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 85% for 5 minutes on {{ $labels.instance }}"
+
+      # System load
+      - alert: HighSystemLoad
+        expr: node_load5 / count by(instance) (node_cpu_seconds_total{mode="system"}) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High system load on {{ $labels.instance }}"
+          description: "System load is more than 2x CPU cores for 5 minutes on {{ $labels.instance }}"
+
+  # Database alerts
+  - name: database_alerts
+    rules:
+      # Database down
+      - alert: PostgreSQLDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL exporter for {{ $labels.instance }} is not responding"
+
+      # High database connections
+      - alert: HighPostgreSQLConnections
+        expr: pg_stat_database_numbackends{datname="deal_sniper_ai"} > 50
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "High PostgreSQL connections"
+          description: "PostgreSQL database 'deal_sniper_ai' has more than 50 connections for 5 minutes"
+
+      # Long-running queries
+      - alert: LongRunningQueries
+        expr: pg_stat_activity_max_tx_duration{datname="deal_sniper_ai"} > 300
+        for: 2m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Long-running queries detected"
+          description: "Queries running for more than 5 minutes in database 'deal_sniper_ai'"
+
+      # Database size growing rapidly
+      - alert: RapidDatabaseGrowth
+        expr: rate(pg_database_size_bytes{datname="deal_sniper_ai"}[1h]) > 1073741824  # 1GB per hour
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Rapid database growth"
+          description: "Database 'deal_sniper_ai' is growing at more than 1GB per hour"
+
+  # Redis alerts
+  - name: redis_alerts
+    rules:
+      # Redis down
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis exporter for {{ $labels.instance }} is not responding"
+
+      # High Redis memory usage
+      - alert: HighRedisMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is above 90% for 5 minutes"
+
+      # Many Redis connections
+      - alert: HighRedisConnections
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+          category: redis
+        annotations:
+          summary: "High Redis connections"
+          description: "Redis has more than 100 connected clients for 5 minutes"
+
+      # Redis evictions
+      - alert: RedisEvictions
+        expr: rate(redis_evicted_keys_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          category: redis
+        annotations:
+          summary: "Redis evicting keys"
+          description: "Redis is evicting more than 10 keys per minute for 2 minutes"
+
+  # API alerts
+  - name: api_alerts
+    rules:
+      # API down
+      - alert: APIDown
+        expr: up{job="deal-sniper-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: api
+        annotations:
+          summary: "Deal Sniper API is down"
+          description: "API server {{ $labels.instance }} is not responding"
+
+      # High API error rate
+      - alert: HighAPIErrorRate
+        expr: rate(deal_sniper_api_requests_total{status=~"5.."}[5m]) / rate(deal_sniper_api_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: api
+        annotations:
+          summary: "High API error rate"
+          description: "API error rate is above 5% for 5 minutes"
+
+      # High API latency
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(deal_sniper_api_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: api
+        annotations:
+          summary: "High API latency"
+          description: "95th percentile API latency is above 2 seconds for 5 minutes"
+
+      # Low request rate (possible issue)
+      - alert: LowAPIRequestRate
+        expr: rate(deal_sniper_api_requests_total[10m]) < 1
+        for: 15m
+        labels:
+          severity: warning
+          category: api
+        annotations:
+          summary: "Low API request rate"
+          description: "API request rate is below 1 request per minute for 15 minutes"
+
+  # Celery alerts
+  - name: celery_alerts
+    rules:
+      # Celery worker down
+      - alert: CeleryWorkerDown
+        expr: celery_worker_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: celery
+        annotations:
+          summary: "Celery worker is down"
+          description: "Celery worker {{ $labels.hostname }} is not responding"
+
+      # High queue length
+      - alert: HighCeleryQueueLength
+        expr: celery_queue_length > 1000
+        for: 5m
+        labels:
+          severity: warning
+          category: celery
+        annotations:
+          summary: "High Celery queue length"
+          description: "Celery queue has more than 1000 pending tasks for 5 minutes"
+
+      # Failed tasks
+      - alert: HighCeleryTaskFailureRate
+        expr: rate(celery_tasks_failed_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: celery
+        annotations:
+          summary: "High Celery task failure rate"
+          description: "Celery task failure rate is above 0.1 per minute for 5 minutes"
+
+      # Long-running tasks
+      - alert: LongRunningCeleryTasks
+        expr: celery_task_runtime_seconds > 300
+        for: 2m
+        labels:
+          severity: warning
+          category: celery
+        annotations:
+          summary: "Long-running Celery tasks"
+          description: "Celery tasks running for more than 5 minutes"
+
+  # Business metrics alerts
+  - name: business_alerts
+    rules:
+      # No deals detected
+      - alert: NoDealsDetected
+        expr: increase(deal_sniper_deals_detected_total[1h]) == 0
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "No deals detected"
+          description: "No deals have been detected in the last 2 hours"
+
+      # Low deal conversion rate
+      - alert: LowDealConversionRate
+        expr: deal_sniper_deals_posted_total / deal_sniper_deals_detected_total * 100 < 10
+        for: 6h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low deal conversion rate"
+          description: "Deal conversion rate is below 10% for 6 hours"
+
+      # No revenue generated
+      - alert: NoRevenueGenerated
+        expr: increase(deal_sniper_revenue_total[24h]) == 0
+        for: 24h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "No revenue generated"
+          description: "No revenue has been generated in the last 24 hours"
+
+      # High error rate in affiliate conversions
+      - alert: HighAffiliateErrorRate
+        expr: rate(deal_sniper_affiliate_errors_total[1h]) / rate(deal_sniper_affiliate_attempts_total[1h]) * 100 > 20
+        for: 1h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High affiliate error rate"
+          description: "Affiliate conversion error rate is above 20% for 1 hour"
+
+  # Backup alerts
+  - name: backup_alerts
+    rules:
+      # Backup failed
+      - alert: BackupFailed
+        expr: deal_sniper_backup_success == 0
+        for: 0m
+        labels:
+          severity: critical
+          category: backup
+        annotations:
+          summary: "Backup failed"
+          description: "Database backup has failed"
+
+      # No recent backup
+      - alert: NoRecentBackup
+        expr: time() - deal_sniper_backup_timestamp_seconds > 86400
+        for: 0m
+        labels:
+          severity: warning
+          category: backup
+        annotations:
+          summary: "No recent backup"
+          description: "No backup has been completed in the last 24 hours"
+
+      # Backup size anomaly
+      - alert: BackupSizeAnomaly
+        expr: abs(deal_sniper_backup_size_bytes - avg_over_time(deal_sniper_backup_size_bytes[7d])) / avg_over_time(deal_sniper_backup_size_bytes[7d]) * 100 > 50
+        for: 0m
+        labels:
+          severity: warning
+          category: backup
+        annotations:
+          summary: "Backup size anomaly"
+          description: "Backup size differs by more than 50% from 7-day average"
+
+  # Health check alerts
+  - name: health_alerts
+    rules:
+      # Service unhealthy
+      - alert: ServiceUnhealthy
+        expr: deal_sniper_service_status < 1
+        for: 2m
+        labels:
+          severity: warning
+          category: monitoring
+        annotations:
+          summary: "Service unhealthy: {{ $labels.service }}"
+          description: "Service {{ $labels.service }} is reporting unhealthy status for 2 minutes"
+
+      # Health check failed
+      - alert: HealthCheckFailed
+        expr: probe_success{job="blackbox", instance=~".*api/health.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Health check failed"
+          description: "API health check endpoint is not responding"
+
+      # High health check latency
+      - alert: HighHealthCheckLatency
+        expr: probe_duration_seconds{job="blackbox", instance=~".*api/health.*"} > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: monitoring
+        annotations:
+          summary: "High health check latency"
+          description: "Health check latency is above 5 seconds for 5 minutes"

@@ -1,0 +1,404 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "deal-sniper-ai",
+    "title": "Deal Sniper AI Platform",
+    "tags": ["deal-sniper", "monitoring", "ecommerce", "python"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Health Overview",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "deal_sniper_service_status",
+            "legendFormat": "{{service}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "orientation": "horizontal",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "orange", "value": 0.5},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "API Request Rate",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 3},
+        "targets": [
+          {
+            "expr": "rate(deal_sniper_api_requests_total[5m])",
+            "legendFormat": "Requests per second",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true, "displayMode": "table"},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "API Response Time (95th percentile)",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 3},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(deal_sniper_api_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "System Resources",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 11},
+        "targets": [
+          {
+            "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+            "legendFormat": "CPU Usage",
+            "refId": "A"
+          },
+          {
+            "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100",
+            "legendFormat": "Memory Usage",
+            "refId": "B"
+          },
+          {
+            "expr": "(node_filesystem_size_bytes{fstype!=\"tmpfs\"} - node_filesystem_free_bytes{fstype!=\"tmpfs\"}) / node_filesystem_size_bytes{fstype!=\"tmpfs\"} * 100",
+            "legendFormat": "Disk Usage",
+            "refId": "C"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Database Metrics",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 11},
+        "targets": [
+          {
+            "expr": "pg_stat_database_numbackends{datname=\"deal_sniper_ai\"}",
+            "legendFormat": "Active Connections",
+            "refId": "A"
+          },
+          {
+            "expr": "pg_stat_activity_max_tx_duration{datname=\"deal_sniper_ai\"}",
+            "legendFormat": "Longest Transaction (s)",
+            "refId": "B"
+          },
+          {
+            "expr": "pg_database_size_bytes{datname=\"deal_sniper_ai\"} / 1024 / 1024",
+            "legendFormat": "Database Size (MB)",
+            "refId": "C"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Redis Metrics",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 11},
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes / 1024 / 1024",
+            "legendFormat": "Memory Used (MB)",
+            "refId": "A"
+          },
+          {
+            "expr": "redis_connected_clients",
+            "legendFormat": "Connected Clients",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(redis_commands_processed_total[5m])",
+            "legendFormat": "Commands per second",
+            "refId": "C"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Celery Worker Status",
+        "type": "stat",
+        "gridPos": {"h": 3, "w": 12, "x": 0, "y": 19},
+        "targets": [
+          {
+            "expr": "celery_worker_up",
+            "legendFormat": "{{hostname}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "horizontal",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Celery Queue Length",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+        "targets": [
+          {
+            "expr": "celery_queue_length",
+            "legendFormat": "{{queue}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Business Metrics",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+        "targets": [
+          {
+            "expr": "deal_sniper_deals_detected_total",
+            "legendFormat": "Deals Detected",
+            "refId": "A"
+          },
+          {
+            "expr": "deal_sniper_deals_posted_total",
+            "legendFormat": "Deals Posted",
+            "refId": "B"
+          },
+          {
+            "expr": "deal_sniper_revenue_total",
+            "legendFormat": "Total Revenue",
+            "refId": "C"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Error Rates",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "rate(deal_sniper_api_requests_total{status=~\"5..\"}[5m]) / rate(deal_sniper_api_requests_total[5m]) * 100",
+            "legendFormat": "API Error Rate",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(celery_tasks_failed_total[5m]) / rate(celery_tasks_total[5m]) * 100",
+            "legendFormat": "Celery Task Error Rate",
+            "refId": "B"
+          }
+        ],
+        "options": {
+          "legend": {"showLegend": true},
+          "tooltip": {"mode": "single"}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "palette-classic"}
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Active Alerts",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "ALERTS{alertstate=\"firing\"}",
+            "instant": true,
+            "legendFormat": "",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "footer": {"show": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          }
+        }
+      }
+    ],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    },
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "hide": 0,
+          "includeAll": true,
+          "multi": false,
+          "name": "instance",
+          "options": [],
+          "query": "label_values(up, instance)",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "type": "query"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "refresh": "30s",
+    "schemaVersion": 36,
+    "version": 1,
+    "links": [],
+    "gnetId": null
+  },
+  "folderUid": "deal-sniper",
+  "message": "Deal Sniper AI Platform Dashboard",
+  "overwrite": true
+}

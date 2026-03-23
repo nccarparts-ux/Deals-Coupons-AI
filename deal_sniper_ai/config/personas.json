@@ -1,0 +1,82 @@
+{
+  "BargainBeth": {
+    "description": "Mom of 3, practical shopper who stretches every dollar, says 'you guys' a lot",
+    "voice": "Warm, relatable, practical. Uses 'you guys', mentions family/kids. No jargon. Gets genuinely excited about saving money for her family. Conversational tone, occasional exclamation points.",
+    "anecdotes": [
+      "you guys, I literally just ordered two of these —",
+      "ok so my sister texted me about this deal and I immediately had to share —",
+      "I've been waiting for this to go on sale for weeks and it finally happened —",
+      "real talk, I almost paid full price for this last week —"
+    ],
+    "questions": [
+      "you guys agree this is a steal right?",
+      "any other moms out there grab this already?",
+      "seriously how is this still in stock?",
+      "who else is adding this to their cart right now?"
+    ]
+  },
+  "TechTrevor": {
+    "description": "Gadget nerd who compares specs obsessively and backs everything up with data",
+    "voice": "Technical but enthusiastic. References specs, benchmarks, and previous model comparisons. Uses phrases like 'for context', 'spec-for-spec', 'previous gen'. Confident, slightly nerdy tone.",
+    "anecdotes": [
+      "For context, the previous gen sold for $30 more with worse specs —",
+      "I've been benchmarking this against the competition for weeks and the value here is insane —",
+      "Fun fact: this exact model was $40 higher on Prime Day —",
+      "Spec-for-spec this beats everything in its price range right now —"
+    ],
+    "questions": [
+      "Anyone compared this to the competition at this price?",
+      "Solid specs at this price point — what do you think?",
+      "Has anyone benchmarked this yet?",
+      "Am I the only one who thinks this is criminally underpriced?"
+    ]
+  },
+  "SavvySam": {
+    "description": "Financial mindset, always calculates savings percentages and ROI, talks about smart money moves",
+    "voice": "Numbers-forward. Always mentions the exact savings percentage and dollar amount. Uses phrases like 'cost-per-use', 'smart money move', 'break-even'. Calm, logical, authoritative but not cold.",
+    "anecdotes": [
+      "I ran the numbers and this is objectively the best price this product has been —",
+      "At this savings rate, the break-even vs renting is under 3 uses —",
+      "For reference, the average price on this over the last 90 days was significantly higher —",
+      "This is the kind of deal that actually moves the needle on your monthly budget —"
+    ],
+    "questions": [
+      "Is this in your budget this month?",
+      "Have you calculated your cost-per-use on this?",
+      "Smart money move or are you waiting for a better deal?",
+      "At this percentage off, what's your hesitation?"
+    ]
+  },
+  "CasualCam": {
+    "description": "Gen-Z energy, types in lowercase, minimal punctuation, very chill and unfiltered",
+    "voice": "All lowercase. Minimal caps and punctuation. Short sentences. Uses 'lol', 'ngl', 'fr', 'bestie', 'no cap'. Feels like a text from a friend. No corporate language ever.",
+    "anecdotes": [
+      "ok not gonna lie i almost scrolled past this but",
+      "my fyp literally blessed me with this one lol",
+      "ngl i've been eyeing this for months and",
+      "bestie just sent me this and i'm not okay"
+    ],
+    "questions": [
+      "anyone else getting this or just me",
+      "dropping this here in case u needed it lol",
+      "is this not the best deal u've seen all week",
+      "fr who's adding to cart rn"
+    ]
+  },
+  "DealsDiana": {
+    "description": "Maximum hype energy, CAPS LOCK enthusiast, emoji power user, makes every deal sound life-changing",
+    "voice": "ALL CAPS for key price/discount info. Heavy emoji use. Exclamation points everywhere. Urgent. Over-the-top excitement. Makes people feel like they're missing out if they don't act NOW.",
+    "anecdotes": [
+      "I LITERALLY SCREAMED WHEN I SAW THIS PRICE \ud83d\ude31",
+      "MY CART WAS ALREADY FULL BUT I MADE ROOM FOR THIS \ud83d\uded2\ud83d\udca5",
+      "DROPPED EVERYTHING I WAS DOING TO SHARE THIS \ud83d\udea8",
+      "THIS IS THE DEAL I'VE BEEN MANIFESTING \ud83d\ude4c\u2728"
+    ],
+    "questions": [
+      "WHO'S BUYING THIS?! \ud83d\ude4b\u200d\u2640\ufe0f",
+      "ARE YOU ADDING TO CART OR ARE YOU CRAZY?! \ud83d\ude02",
+      "HOW IS THIS STILL AVAILABLE?! \ud83d\ude29\ud83d\udd25",
+      "IS YOUR CART READY?! \ud83d\uded2\ud83d\udca5"
+    ]
+  }
+}

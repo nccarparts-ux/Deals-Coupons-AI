@@ -1,0 +1,51 @@
+[Unit]
+Description=Deal Sniper AI Celery Worker
+Documentation=https://github.com/your-username/deal-sniper-ai
+After=network.target redis-server.service
+Requires=redis-server.service
+Wants=network.target
+
+[Service]
+Type=simple
+User=dealsniper
+Group=dealsniper
+WorkingDirectory=/opt/deal-sniper-ai
+Environment="PYTHONPATH=/opt/deal-sniper-ai"
+Environment="PYTHONUNBUFFERED=1"
+Environment="LOG_LEVEL=INFO"
+Environment="DS_ENVIRONMENT=production"
+Environment="C_FORCE_ROOT=true"
+ExecStart=/opt/deal-sniper-ai/venv/bin/celery -A deal_sniper_ai.scheduler.celery_app worker --loglevel=info --concurrency=4 --queues=default,monitoring,coupons,analytics,glitches,affiliate,scoring,community,posting,growth,maintenance --hostname=worker@%%h --pool=prefork
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=deal-sniper-worker
+SyslogFacility=local7
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/deal-sniper-ai/logs /opt/deal-sniper-ai/data
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+MemoryDenyWriteExecute=true
+LockPersonality=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitMEMLOCK=infinity
+LimitSTACK=infinity
+
+[Install]
+WantedBy=multi-user.target
