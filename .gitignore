@@ -1,3 +1,6 @@
+# Config files with potential secrets — use config.yaml.template instead
+deal_sniper_ai/config/config.yaml
+
 # Environment files
 .env
 .env.local
@@ -18,13 +21,15 @@ __pycache__/
 *.pyc
 __pycache__/
 
+# Archived / reference-only files (never push, Claude should not read unless asked)
+archive/
+
 # AI/Agent files
 *.txt
 *.md
 !README.md
 !CLAUDE.md
 !ADMIN_SETUP.md
-!SKILLS_SUMMARY.md
 !skills/*.md
 context.txt
 complete_response.txt
