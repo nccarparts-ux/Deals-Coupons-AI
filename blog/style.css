@@ -196,6 +196,29 @@ body {
   font-weight: 700; font-size: .9rem;
 }
 
+/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+.breadcrumb { max-width: var(--max-w); margin: 0 auto; padding: .6rem 2rem 0; }
+.breadcrumb ol { list-style: none; display: flex; gap: .4rem; flex-wrap: wrap; font-size: .8rem; color: var(--muted); }
+.breadcrumb li + li::before { content: '/'; margin-right: .4rem; }
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent-light); }
+
+/* ── Post header ─────────────────────────────────────────────────────────── */
+.post-header { margin-bottom: 1.5rem; }
+.post-date { font-size: .8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ── Deal item ───────────────────────────────────────────────────────────── */
+.deal-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.6rem; margin-bottom: 1.5rem; }
+.cta-btn { display: inline-block; background: var(--accent); color: #fff; border-radius: 8px; padding: .45rem 1.1rem; font-size: .88rem; font-weight: 700; text-decoration: none; margin-top: .5rem; transition: background .15s; }
+.cta-btn:hover { background: var(--accent-light); color: #0f1117; }
+
+/* ── Post excerpt on index ───────────────────────────────────────────────── */
+.post-excerpt { font-size: .85rem; color: var(--muted); margin: .4rem 0 .6rem; }
+
+/* ── Related posts aside ─────────────────────────────────────────────────── */
+.related-posts { max-width: 760px; margin: 0 auto 3rem; padding: 1.2rem 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.related-posts h2 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; color: var(--accent-light); }
+
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 .site-footer {
   text-align: center;

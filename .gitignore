@@ -13,13 +13,11 @@ deal_sniper_ai/config/config.yaml
 *.backup
 *.backup2
 
-# Python
-__pycache__/
+# Python compiled / cache
 *.pyc
-# Python files
-*.py
-*.pyc
+*.pyo
 __pycache__/
+*.egg-info/
 
 # Archived / reference-only files (never push, Claude should not read unless asked)
 archive/
