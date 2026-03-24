@@ -588,21 +588,32 @@ class EcommerceCrawler:
 
         return products
 
-    async def _extract_max_price(self, page: Page, selector: str) -> Optional[float]:
-        """Return the largest valid price found among all elements matching selector."""
+    async def _extract_real_price(self, page: Page, selector: str) -> Optional[float]:
+        """Return the smallest valid non-unit price found among all elements matching selector.
+
+        Amazon pages contain both a real price ($13.98) and a per-unit price ($537.96/oz)
+        inside the same container. Per-unit prices are identified by a '/' character in the
+        text (e.g. '/oz', '/count'). We skip those and return the minimum of what remains,
+        which is the actual listing price.
+        """
         try:
             elements = await page.query_selector_all(selector)
-            best: Optional[float] = None
+            candidates: list = []
             for el in elements:
                 raw = await el.inner_text()
-                raw = raw.strip().replace(",", "").replace("$", "")
+                raw = raw.strip()
+                # Skip per-unit prices like "$537.96/oz" or "537.96 /fl oz"
+                if "/" in raw:
+                    continue
+                cleaned = raw.replace(",", "").replace("$", "")
                 try:
-                    val = float(raw.split()[0])  # handle "13.98 /oz" → 13.98
-                    if best is None or val > best:
-                        best = val
+                    val = float(cleaned.split()[0])
+                    candidates.append(val)
                 except (ValueError, IndexError):
                     pass
-            return best
+            # Return smallest valid price >= $1 (real price is lower than inflated unit price)
+            valid = [v for v in candidates if v >= 1.0]
+            return min(valid) if valid else None
         except Exception:
             return None
 
@@ -624,11 +635,11 @@ class EcommerceCrawler:
             # Extract basic information
             title = await self._extract_text(page, selectors.get("title", "h1"))
 
-            # --- Current price: collect ALL candidates, take max >= $1 -----------
+            # --- Current price: skip per-unit prices, take min valid >= $1 --------
             # Amazon product pages embed BOTH the real price and a per-unit price
             # (e.g. $13.98 AND $537.96/oz) inside the same feature div.
-            # Taking .first() grabs the unit price and produces fake 96%-off deals.
-            # Collecting all values and taking max() reliably returns the real price.
+            # Per-unit text contains "/" so we filter those out, then take min()
+            # of what remains — the real listing price is always the smaller number.
             current_price = None
             for price_sel in [
                 ".priceToPay .a-offscreen",           # most reliable — actual checkout price
@@ -641,7 +652,7 @@ class EcommerceCrawler:
             ]:
                 if not price_sel:
                     continue
-                v = await self._extract_max_price(page, price_sel)
+                v = await self._extract_real_price(page, price_sel)
                 if v is not None and v >= 1.0:
                     current_price = v
                     break
@@ -658,7 +669,7 @@ class EcommerceCrawler:
                     "#listPrice",
                     ".a-price.a-text-strike .a-offscreen",
                 ]:
-                    v = await self._extract_max_price(page, orig_sel)
+                    v = await self._extract_real_price(page, orig_sel)
                     if v is not None and v > current_price:
                         if v <= current_price * 5:   # sanity cap: max 80% off from list
                             original_price = v
