@@ -18,6 +18,7 @@ if errorlevel 1 (
 
 :: Kill existing processes
 echo Stopping existing processes...
+taskkill /F /FI "WINDOWTITLE eq Redis*"        >nul 2>&1
 taskkill /F /FI "WINDOWTITLE eq Celery Worker*" >nul 2>&1
 taskkill /F /FI "WINDOWTITLE eq Celery Beat*"   >nul 2>&1
 taskkill /F /FI "WINDOWTITLE eq API Server*"    >nul 2>&1
@@ -27,6 +28,31 @@ for /f "tokens=5" %%P in ('netstat -ano 2^>nul ^| findstr /L ":8001" ^| findstr 
     taskkill /F /PID %%P >nul 2>&1
 )
 ping 127.0.0.1 -n 3 >nul
+
+:: Start Redis if not already running on port 6379
+echo Checking Redis...
+netstat -ano 2>nul | findstr /L ":6379" | findstr "LISTENING" >nul
+if errorlevel 1 (
+    echo Starting Redis...
+    where redis-server >nul 2>&1
+    if errorlevel 1 (
+        echo [WARN] redis-server not found in PATH. Trying common install locations...
+        if exist "C:\Program Files\Redis\redis-server.exe" (
+            start "Redis" "C:\Program Files\Redis\redis-server.exe"
+        ) else if exist "C:\tools\redis\redis-server.exe" (
+            start "Redis" "C:\tools\redis\redis-server.exe"
+        ) else (
+            echo [FAIL] Redis not found. Install from https://github.com/tporadowski/redis/releases
+            pause
+            exit /b 1
+        )
+    ) else (
+        start "Redis" cmd /k "redis-server"
+    )
+    ping 127.0.0.1 -n 4 >nul
+) else (
+    echo Redis already running.
+)
 
 :: Start components
 echo Starting Celery Worker...
@@ -45,5 +71,5 @@ echo Deal Sniper AI is running!
 echo   Dashboard:    http://127.0.0.1:8001/dashboard
 echo   Social panel: http://127.0.0.1:8001/social
 echo.
-echo Close the three windows to stop.
+echo Close the four windows to stop (Redis, Celery Worker, Celery Beat, API Server).
 pause
