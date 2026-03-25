@@ -31,6 +31,7 @@ SAMPLE_DEAL = {
     "viral_potential": 9.2,
     "url": "https://www.amazon.com/dp/B09XS7JWHH?tag=bidyarddeals-20",
     "affiliate_link": "https://www.amazon.com/dp/B09XS7JWHH?tag=bidyarddeals-20",
+    "image_url": "https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1000_.jpg",
 }
 
 
