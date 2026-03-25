@@ -72,7 +72,7 @@ class TwitterPoster:
             self.platform_config.get('access_token', '')
         )
         self.access_secret = (
-            os.environ.get('TWITTER_ACCESS_TOKEN_SECRET') or
+            os.environ.get('TWITTER_ACCESS_SECRET') or
             self.platform_config.get('access_secret', '')
         )
 
