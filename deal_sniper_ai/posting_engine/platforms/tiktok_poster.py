@@ -68,44 +68,31 @@ class TikTokPosterError(Exception):
 
 def _build_voiceover(script_text: str, speed: float = 1.0) -> bytes:
     """
-    Synthesise speech from *script_text* and return raw WAV bytes.
+    Synthesise speech from *script_text* and return MP3 bytes via gTTS.
+
+    Speed adjustment via pydub is skipped on Windows (requires system ffprobe).
+    MoviePy loads the MP3 directly using its bundled imageio_ffmpeg binary.
 
     Args:
         script_text: Full narration text.
-        speed: Playback speed multiplier (1.0, 1.05, or 1.1).
+        speed: Ignored on Windows (gTTS does not support speed natively).
 
     Returns:
-        WAV audio bytes.
+        MP3 audio bytes.
     """
     try:
         from gtts import gTTS
-        from pydub import AudioSegment
     except ImportError as exc:
         raise TikTokPosterError(
-            "gTTS and pydub are required for voiceover generation. "
-            "Install them with: pip install gTTS pydub"
+            "gTTS is required for voiceover generation. "
+            "Install it with: pip install gTTS"
         ) from exc
 
-    # Generate base MP3 with gTTS
     tts = gTTS(text=script_text, lang="en", slow=False)
     mp3_buffer = io.BytesIO()
     tts.write_to_fp(mp3_buffer)
     mp3_buffer.seek(0)
-
-    # Load into pydub and apply speed change
-    audio = AudioSegment.from_file(mp3_buffer, format="mp3")
-
-    if speed != 1.0:
-        # pydub speed change: stretch frame rate then resample back
-        new_frame_rate = int(audio.frame_rate * speed)
-        audio = audio._spawn(audio.raw_data, overrides={"frame_rate": new_frame_rate})
-        audio = audio.set_frame_rate(44100)
-
-    # Export as WAV into bytes
-    wav_buffer = io.BytesIO()
-    audio.export(wav_buffer, format="wav")
-    wav_buffer.seek(0)
-    return wav_buffer.read()
+    return mp3_buffer.read()
 
 
 # ---------------------------------------------------------------------------
@@ -206,21 +193,31 @@ def _assemble_video(
         Absolute path to the rendered .mp4 file.
     """
     try:
-        from moviepy.editor import (
-            AudioFileClip,
-            CompositeVideoClip,
-            TextClip,
-            VideoFileClip,
-            concatenate_videoclips,
-        )
+        # moviepy 2.x uses top-level imports; 1.x used moviepy.editor
+        try:
+            from moviepy import (
+                AudioFileClip,
+                CompositeVideoClip,
+                TextClip,
+                VideoFileClip,
+                concatenate_videoclips,
+            )
+        except ImportError:
+            from moviepy.editor import (
+                AudioFileClip,
+                CompositeVideoClip,
+                TextClip,
+                VideoFileClip,
+                concatenate_videoclips,
+            )
     except ImportError as exc:
         raise TikTokPosterError(
             "moviepy is required for video assembly. "
             "Install it with: pip install moviepy"
         ) from exc
 
-    # Write audio bytes to a temp file so MoviePy can load it
-    tmp_audio_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    # Write audio bytes to a temp file so MoviePy can load it (MP3 via imageio_ffmpeg)
+    tmp_audio_file = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
     tmp_audio_file.write(audio_bytes)
     tmp_audio_file.close()
 
@@ -248,10 +245,11 @@ def _assemble_video(
             loops_needed = int(target_duration / base_video.duration) + 1
             base_video = concatenate_videoclips([base_video] * loops_needed, method="compose")
 
-        base_video = base_video.subclip(0, target_duration)
+        # moviepy 2.x renamed subclip → subclipped, resize → resized
+        base_video = base_video.subclipped(0, target_duration)
 
         # Resize to 9:16 portrait for TikTok
-        base_video = base_video.resize(height=TARGET_HEIGHT)
+        base_video = base_video.resized(height=TARGET_HEIGHT)
 
         # --- Burn-in captions ---
         caption_clips = []
@@ -291,21 +289,23 @@ def _assemble_video(
             wrapped_text = "\n".join(wrapped_lines)
 
             try:
+                # moviepy 2.x: positional arg is gone; use keyword `text=`
+                # set_start/set_duration/set_position → with_start/with_duration/with_position
                 txt_clip = (
                     TextClip(
-                        wrapped_text,
-                        fontsize=60,
+                        text=wrapped_text,
+                        font_size=60,
                         color="white",
                         stroke_color="black",
                         stroke_width=3,
-                        font="Arial-Bold",
+                        font="Arial",
                         method="caption",
                         size=(TARGET_WIDTH - 80, None),
-                        align="center",
+                        text_align="center",
                     )
-                    .set_start(start_t)
-                    .set_duration(clip_dur)
-                    .set_position(("center", "center"))
+                    .with_start(start_t)
+                    .with_duration(clip_dur)
+                    .with_position(("center", "center"))
                 )
                 caption_clips.append(txt_clip)
             except Exception as exc:  # noqa: BLE001
@@ -317,8 +317,8 @@ def _assemble_video(
         else:
             final_video = base_video
 
-        # Attach voiceover
-        final_video = final_video.set_audio(audio_clip)
+        # Attach voiceover (moviepy 2.x: set_audio → with_audio)
+        final_video = final_video.with_audio(audio_clip)
 
         # Render
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -327,9 +327,6 @@ def _assemble_video(
             fps=30,
             codec="libx264",
             audio_codec="aac",
-            temp_audiofile=tmp_audio_file.name + "_temp.m4a",
-            remove_temp=True,
-            verbose=False,
             logger=None,
         )
 
@@ -490,7 +487,8 @@ async def manual_upload_helper(deal_data: dict, video_path: str, caption: str) -
         True if the Telegram notification was sent successfully.
     """
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-    channel_id = os.environ.get("TELEGRAM_CHANNEL_ID", "")
+    # TikTok upload notifications go to the owner's DM, not the public group
+    channel_id = os.environ.get("TELEGRAM_OWNER_ID") or os.environ.get("TELEGRAM_CHANNEL_ID", "")
 
     title = deal_data.get("title", "Deal")
 
