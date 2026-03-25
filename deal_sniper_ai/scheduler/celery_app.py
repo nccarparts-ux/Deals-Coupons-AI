@@ -211,22 +211,10 @@ app.conf.update(
             'options': {'queue': 'posting'},
         },
 
-        # ── Phase-9: TikTok notification times (7am, 12pm, 7pm UTC) ─────────
-        'notify-tiktok-7am': {
+        # ── TikTok: check every 30 minutes for viral deals ───────────────────
+        'notify-tiktok-every-30min': {
             'task': 'deal_sniper_ai.posting_engine.tasks.notify_tiktok_ready',
-            'schedule': crontab(hour=7, minute=0),
-            'args': (),
-            'options': {'queue': 'posting'},
-        },
-        'notify-tiktok-12pm': {
-            'task': 'deal_sniper_ai.posting_engine.tasks.notify_tiktok_ready',
-            'schedule': crontab(hour=12, minute=0),
-            'args': (),
-            'options': {'queue': 'posting'},
-        },
-        'notify-tiktok-7pm': {
-            'task': 'deal_sniper_ai.posting_engine.tasks.notify_tiktok_ready',
-            'schedule': crontab(hour=19, minute=0),
+            'schedule': crontab(minute='*/30'),
             'args': (),
             'options': {'queue': 'posting'},
         },
