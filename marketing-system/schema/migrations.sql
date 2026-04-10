@@ -1,5 +1,6 @@
 -- ============================================================
 -- Marketing System -- Run once in Supabase SQL Editor
+-- Safe to re-run: uses IF NOT EXISTS / ADD COLUMN IF NOT EXISTS
 -- ============================================================
 
 -- Config (stores key/value pairs: telegram offset, latest PDF path, etc.)
@@ -9,40 +10,40 @@ CREATE TABLE IF NOT EXISTS config (
   value TEXT
 );
 
--- Deals (sourced from Telegram channel)
-CREATE TABLE IF NOT EXISTS deals (
-  id                TEXT PRIMARY KEY,
-  title             TEXT,
-  price             NUMERIC,
-  original_price    NUMERIC,
-  discount_pct      INT,
-  amazon_url        TEXT,
-  image_url         TEXT,
-  category          TEXT,
-  raw_text          TEXT,
-  keywords          TEXT,
-  slug              TEXT UNIQUE,
-  fetched_at        TIMESTAMPTZ,
-  content_written   BOOL DEFAULT false,
-  email_sent        BOOL DEFAULT false,
-  website_published BOOL DEFAULT false,
-  social_queued     BOOL DEFAULT false,
-  page_views        INT  DEFAULT 0,
-  click_throughs    INT  DEFAULT 0
-);
+-- Deals table already exists from the main pipeline.
+-- Add all marketing-system columns that may be missing.
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS price             NUMERIC;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS discount_pct      INT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS amazon_url        TEXT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS raw_text          TEXT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS keywords          TEXT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS slug              TEXT;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS fetched_at        TIMESTAMPTZ;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS content_written   BOOL DEFAULT false;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS email_sent        BOOL DEFAULT false;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS website_published BOOL DEFAULT false;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS social_queued     BOOL DEFAULT false;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS page_views        INT  DEFAULT 0;
+ALTER TABLE deals ADD COLUMN IF NOT EXISTS click_throughs    INT  DEFAULT 0;
+
+-- Make slug unique if it isn't already (safe no-op if index exists)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_deals_slug ON deals (slug) WHERE slug IS NOT NULL;
+
+-- Backfill fetched_at from created_at for existing rows
+UPDATE deals SET fetched_at = created_at WHERE fetched_at IS NULL AND created_at IS NOT NULL;
 
 -- Email subscribers
 CREATE TABLE IF NOT EXISTS subscribers (
-  id           BIGSERIAL PRIMARY KEY,
-  email        TEXT UNIQUE,
-  first_name   TEXT,
-  source       TEXT,
+  id            BIGSERIAL PRIMARY KEY,
+  email         TEXT UNIQUE,
+  first_name    TEXT,
+  source        TEXT,
   referral_code TEXT UNIQUE,
-  referred_by  BIGINT,
-  confirmed    BOOL        DEFAULT false,
-  confirmed_at TIMESTAMPTZ,
-  joined_at    TIMESTAMPTZ DEFAULT now(),
-  unsubscribed BOOL        DEFAULT false
+  referred_by   BIGINT,
+  confirmed     BOOL        DEFAULT false,
+  confirmed_at  TIMESTAMPTZ,
+  joined_at     TIMESTAMPTZ DEFAULT now(),
+  unsubscribed  BOOL        DEFAULT false
 );
 
 -- Content queue (AI-generated copy for each platform)
@@ -77,13 +78,13 @@ CREATE TABLE IF NOT EXISTS referral_clicks (
 
 -- Google Search Console performance data
 CREATE TABLE IF NOT EXISTS seo_performance (
-  id          BIGSERIAL PRIMARY KEY,
-  deal_slug   TEXT,
-  keyword     TEXT,
-  impressions INT     DEFAULT 0,
-  clicks      INT     DEFAULT 0,
+  id           BIGSERIAL PRIMARY KEY,
+  deal_slug    TEXT,
+  keyword      TEXT,
+  impressions  INT     DEFAULT 0,
+  clicks       INT     DEFAULT 0,
   avg_position NUMERIC,
-  recorded_at TIMESTAMPTZ DEFAULT now()
+  recorded_at  TIMESTAMPTZ DEFAULT now()
 );
 
 -- Learning engine insights
@@ -95,7 +96,7 @@ CREATE TABLE IF NOT EXISTS learning_log (
   recorded_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Indexes for common queries
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_deals_content_written   ON deals (content_written);
 CREATE INDEX IF NOT EXISTS idx_deals_website_published ON deals (website_published);
 CREATE INDEX IF NOT EXISTS idx_deals_fetched_at        ON deals (fetched_at DESC);
