@@ -1,158 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deals-Coupons-AI - AI-Powered Deals and Coupons Platform</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: white;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        header {
-            text-align: center;
-            padding: 2rem 1rem;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 2rem;
-        }
-        h1 {
-            color: #1E4ED8;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .subtitle {
-            color: #666;
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        .hero {
-            background: linear-gradient(135deg, #f5f7ff 0%, #eef1ff 100%);
-            border-radius: 16px;
-            padding: 3rem;
-            text-align: center;
-            margin-bottom: 3rem;
-            border: 1px solid #e0e7ff;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-        .feature-card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            border: 1px solid #eee;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .feature-card h3 {
-            color: #1E4ED8;
-            margin-bottom: 1rem;
-        }
-        footer {
-            text-align: center;
-            padding: 2rem 1rem;
-            border-top: 1px solid #eee;
-            margin-top: 2rem;
-            color: #666;
-        }
-        .cta-button {
-            display: inline-block;
-            background: #1E4ED8;
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            margin-top: 1rem;
-            transition: background 0.3s;
-        }
-        .cta-button:hover {
-            background: #1539a8;
-        }
-        .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            color: #856404;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Amazon Deal Alerts &mdash; Price Drops &amp; Coupons | Coupons, Deals &amp; Steals</title>
+  <meta name="description" content="Get free Amazon deal alerts delivered instantly. We find electronics, kitchen, clothing, and toy deals at 30-80% off. Join free &mdash; no spam.">
+  <link rel="canonical" href="https://deals-coupons-ai.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Free Amazon Deal Alerts | Coupons, Deals &amp; Steals">
+  <meta property="og:description" content="We hunt the deepest Amazon discounts and alert you instantly. 100% free.">
+  <meta property="og:url" content="https://deals-coupons-ai.vercel.app/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free Amazon Deal Alerts | Coupons, Deals &amp; Steals">
+  <meta name="twitter:description" content="We hunt the deepest Amazon discounts and alert you instantly. 100% free.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SiteNavigationElement",
+    "name": ["Home", "Top Deals", "About", "Download"],
+    "url": [
+      "https://deals-coupons-ai.vercel.app/",
+      "https://deals-coupons-ai.vercel.app/top-deals",
+      "https://deals-coupons-ai.vercel.app/about",
+      "https://deals-coupons-ai.vercel.app/download"
+    ]
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #111114; color: #fff; font-family: 'DM Sans', sans-serif; line-height: 1.6; }
+
+    .alert-bar { background: #FF5E1A; color: #fff; text-align: center; padding: 10px 16px; font-size: 14px; font-weight: 600; }
+
+    nav { background: #0a0a0d; padding: 14px 32px; display: flex; align-items: center; gap: 28px; border-bottom: 1px solid #1a1a1f; position: sticky; top: 0; z-index: 100; }
+    .nav-brand { font-family: 'Bebas Neue'; font-size: 26px; color: #FF5E1A; text-decoration: none; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
+    nav a:hover { color: #fff; }
+    .nav-tg { margin-left: auto; background: #FF5E1A; color: #fff !important; padding: 8px 18px; border-radius: 4px; font-weight: 700; font-size: 13px; }
+
+    .hero { text-align: center; padding: 80px 24px 64px; max-width: 800px; margin: 0 auto; }
+    .hero h1 { font-family: 'Bebas Neue'; font-size: clamp(64px, 12vw, 96px); line-height: .95; margin-bottom: 20px; }
+    .hero h1 span { color: #FF5E1A; }
+    .hero-sub { font-size: 18px; color: #aaa; max-width: 520px; margin: 0 auto 36px; }
+
+    .hero-form { display: flex; gap: 8px; max-width: 520px; margin: 0 auto 12px; flex-wrap: wrap; justify-content: center; }
+    .hero-form input { flex: 1; min-width: 160px; background: #1a1a1f; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 13px 16px; font-size: 15px; font-family: 'DM Sans'; }
+    .hero-form input::placeholder { color: #555; }
+    .hero-form button { background: #FF5E1A; color: #fff; border: none; border-radius: 4px; padding: 13px 24px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: 'DM Sans'; }
+    .hero-success { display: none; color: #4ade80; font-weight: 600; font-size: 15px; margin-bottom: 12px; }
+
+    .hero-social { display: flex; gap: 12px; justify-content: center; margin-top: 18px; }
+    .social-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: 700; text-decoration: none; }
+    .social-btn-tg { background: #229ED9; color: #fff; }
+    .social-proof { font-size: 13px; color: #555; margin-top: 10px; }
+
+    .section { padding: 64px 32px; max-width: 1200px; margin: 0 auto; }
+    .section-title { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 32px; }
+
+    .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .deal-card { background: #1a1a1f; border-radius: 6px; overflow: hidden; text-decoration: none; color: #fff; display: block; opacity: 0; transform: translateY(20px); transition: opacity .4s ease, transform .4s ease, box-shadow .15s; }
+    .deal-card.visible { opacity: 1; transform: translateY(0); }
+    .deal-card:hover { box-shadow: 0 4px 20px rgba(255,94,26,.15); }
+    .deal-card img { width: 100%; height: 200px; object-fit: cover; background: #222; }
+    .deal-card-body { padding: 14px; }
+    .deal-cat-badge { display: inline-block; background: #FF5E1A22; color: #FF5E1A; border: 1px solid #FF5E1A33; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .deal-card-title { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .deal-card-prices { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .deal-price-now { font-family: 'Bebas Neue'; font-size: 24px; color: #FF5E1A; }
+    .deal-price-was { font-size: 13px; color: #555; text-decoration: line-through; }
+    .deal-off-badge { margin-left: auto; background: #FF5E1A; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; }
+    .deal-card-cta { display: block; margin-top: 12px; text-align: center; background: #FF5E1A; color: #fff; padding: 8px; border-radius: 3px; font-size: 13px; font-weight: 700; }
+    .deals-loading { color: #555; text-align: center; padding: 40px; grid-column: 1 / -1; }
+
+    .how-section { background: #0d0d10; padding: 64px 32px; }
+    .how-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+    .how-inner h2 { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 40px; }
+    .how-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    @media (max-width: 600px) { .how-cols { grid-template-columns: 1fr; } }
+    .how-col { text-align: center; }
+    .how-icon { font-size: 40px; margin-bottom: 14px; }
+    .how-col h3 { font-family: 'Bebas Neue'; font-size: 22px; margin-bottom: 8px; color: #FF5E1A; }
+    .how-col p { color: #aaa; font-size: 14px; }
+
+    .lead-section { background: #FF5E1A; padding: 64px 32px; text-align: center; }
+    .lead-section h2 { font-family: 'Bebas Neue'; font-size: 40px; color: #fff; margin-bottom: 8px; }
+    .lead-section p { color: #fff; opacity: .9; font-size: 16px; margin-bottom: 28px; }
+    .lead-form { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+    .lead-form input { flex: 1; min-width: 200px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 4px; padding: 12px 16px; font-size: 14px; font-family: 'DM Sans'; }
+    .lead-form input::placeholder { color: rgba(255,255,255,.6); }
+    .lead-form button { background: #111114; color: #FF5E1A; border: none; border-radius: 4px; padding: 12px 22px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'DM Sans'; }
+    .lead-success { display: none; color: #fff; font-weight: 700; font-size: 16px; margin-top: 12px; }
+
+    .community-section { padding: 64px 32px; max-width: 800px; margin: 0 auto; }
+    .community-section h2 { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 28px; text-align: center; }
+    .community-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 560px) { .community-cards { grid-template-columns: 1fr; } }
+    .community-card { background: #1a1a1f; border-radius: 8px; padding: 28px; text-align: center; }
+    .community-card h3 { font-family: 'Bebas Neue'; font-size: 22px; margin-bottom: 8px; }
+    .community-card p { color: #aaa; font-size: 14px; margin-bottom: 16px; }
+    .community-card a { display: inline-block; padding: 10px 22px; border-radius: 4px; font-weight: 700; font-size: 14px; text-decoration: none; }
+    .btn-tg { background: #229ED9; color: #fff; }
+    .btn-fb { background: #1877F2; color: #fff; }
+
+    .faq-section { padding: 64px 32px; max-width: 720px; margin: 0 auto; }
+    .faq-section h2 { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 28px; }
+    .faq-item { border-bottom: 1px solid #1a1a1f; }
+    .faq-q { padding: 16px 0; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+    .faq-q::after { content: '+'; color: #FF5E1A; font-size: 22px; font-weight: 300; flex-shrink: 0; margin-left: 12px; }
+    .faq-q.open::after { content: '-'; }
+    .faq-a { display: none; padding: 0 0 16px; color: #aaa; font-size: 14px; line-height: 1.7; }
+
+    footer { background: #0a0a0d; border-top: 1px solid #1a1a1f; padding: 40px 32px; text-align: center; color: #444; font-size: 13px; }
+    footer .footer-links { margin-bottom: 12px; }
+    footer a { color: #666; text-decoration: none; margin: 0 12px; }
+    footer a:hover { color: #FF5E1A; }
+    footer p { margin-top: 8px; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Deals-Coupons-AI</h1>
-        <p class="subtitle">AI-Powered Deals and Coupons Platform</p>
-    </header>
 
-    <div class="hero">
-        <h2>🚀 Project Successfully Set Up!</h2>
-        <p>Your development environment is ready with Claude Code, DeepSeek AI, Playwright tests, Supabase, Vercel, and autonomous QA system.</p>
+<div class="alert-bar">FREE DEAL ALERTS &mdash; No spam, unsubscribe anytime</div>
 
-        <div class="warning">
-            <strong>⚠️ Next Steps Required:</strong>
-            <ol style="margin-top: 0.5rem; padding-left: 1.5rem;">
-                <li>Add your DeepSeek API key to <code>.env</code> file</li>
-                <li>Create Supabase project and add credentials to <code>.env</code></li>
-                <li>Push to GitHub: <code>git remote add origin [your-repo-url]</code></li>
-                <li>Deploy to Vercel: <code>vercel deploy</code></li>
-                <li>Run tests: <code>npm test</code></li>
-            </ol>
-        </div>
+<nav>
+  <a class="nav-brand" href="/">DEAL SNIPER</a>
+  <a href="/top-deals">Top Deals</a>
+  <a href="/about">About</a>
+  <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
+</nav>
 
-        <a href="#" class="cta-button">Get Started with Development</a>
+<section class="hero">
+  <h1>Amazon Deals.<br><span>First.</span></h1>
+  <p class="hero-sub">We hunt the deepest Amazon discounts and alert you instantly &mdash; 100% free.</p>
+  <form class="hero-form" id="heroForm">
+    <input type="text" name="first_name" placeholder="First name">
+    <input type="email" name="email" placeholder="your@email.com" required>
+    <button type="submit">Get Free Alerts</button>
+  </form>
+  <div class="hero-success" id="heroSuccess">You're in! Check your inbox to confirm.</div>
+  <div class="hero-social">
+    <a href="https://t.me/Coupons_Deals_Steals" class="social-btn social-btn-tg" target="_blank" rel="noopener">Telegram Channel</a>
+  </div>
+  <div class="social-proof">Deals posted daily &mdash; join free</div>
+</section>
+
+<div class="section">
+  <div class="section-title">Latest Deals</div>
+  <div class="deals-grid" id="dealsFeed">
+    <div class="deals-loading">Loading deals&hellip;</div>
+  </div>
+</div>
+
+<div class="how-section">
+  <div class="how-inner">
+    <h2>How It Works</h2>
+    <div class="how-cols">
+      <div class="how-col">
+        <div class="how-icon">&#128269;</div>
+        <h3>We Hunt</h3>
+        <p>Our AI scans Amazon 24/7 for the biggest price drops across every category.</p>
+      </div>
+      <div class="how-col">
+        <div class="how-icon">&#128276;</div>
+        <h3>We Alert</h3>
+        <p>The moment we find a deal over 30% off, you get an instant notification.</p>
+      </div>
+      <div class="how-col">
+        <div class="how-icon">&#128176;</div>
+        <h3>You Save</h3>
+        <p>Click, shop, and save. No coupons to clip. Just deals delivered to you.</p>
+      </div>
     </div>
+  </div>
+</div>
 
-    <div class="features">
-        <div class="feature-card">
-            <h3>🤖 Claude Code + DeepSeek</h3>
-            <p>AI-powered development with DeepSeek model integration. Optimized for low token usage and parallel agent execution.</p>
-        </div>
-        <div class="feature-card">
-            <h3>🧪 Playwright Testing</h3>
-            <p>Comprehensive end-to-end tests with multi-browser support. Automated testing infrastructure ready.</p>
-        </div>
-        <div class="feature-card">
-            <h3>🔄 Autonomous QA System</h3>
-            <p>Self-healing system that crawls your site, detects issues, and applies fixes automatically.</p>
-        </div>
-        <div class="feature-card">
-            <h3>📚 Skills & Memory</h3>
-            <p>Comprehensive tool documentation and project memory system for efficient agent learning.</p>
-        </div>
-        <div class="feature-card">
-            <h3>🗄️ Supabase Backend</h3>
-            <p>Full-stack development with Supabase CLI for local development and cloud deployment.</p>
-        </div>
-        <div class="feature-card">
-            <h3>🚀 Vercel Deployment</h3>
-            <p>Production deployment pipeline with Vercel CLI and CI/CD integration.</p>
-        </div>
+<div class="lead-section">
+  <h2>Free: Top 10 Deals This Week</h2>
+  <p>Get our curated PDF report with this week's best Amazon deals.</p>
+  <form class="lead-form" id="leadForm">
+    <input type="email" name="email" placeholder="your@email.com" required>
+    <button type="submit">Send Me the PDF</button>
+  </form>
+  <div class="lead-success" id="leadSuccess">Check your inbox for the download link!</div>
+</div>
+
+<div class="community-section">
+  <h2>Join the Community</h2>
+  <div class="community-cards">
+    <div class="community-card">
+      <h3>Telegram Channel</h3>
+      <p>Instant deal alerts the moment we find them. Fastest way to never miss a deal.</p>
+      <a href="https://t.me/Coupons_Deals_Steals" class="btn-tg" target="_blank" rel="noopener">Join Free</a>
     </div>
+    <div class="community-card">
+      <h3>Facebook Group</h3>
+      <p>Share finds, ask questions, and connect with other deal hunters.</p>
+      <a href="#" class="btn-fb" target="_blank" rel="noopener">Join Group</a>
+    </div>
+  </div>
+</div>
 
-    <footer>
-        <p>Deals-Coupons-AI &copy; 2026 | Built with Claude Code + DeepSeek AI</p>
-        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #888;">
-            Project template includes: Claude Code config, Playwright tests, Supabase CLI, Vercel deployment, Autonomous QA, Skills documentation, Memory system
-        </p>
-    </footer>
+<div class="faq-section">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item">
+    <div class="faq-q">Is this really free?</div>
+    <div class="faq-a">Yes, 100% free. We earn a small commission from Amazon when you buy through our links (at no extra cost to you). That's how we keep the alerts free for everyone.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How do I get deal alerts?</div>
+    <div class="faq-a">Enter your email above for daily deal digests. For instant alerts the moment we find a deal, join our free Telegram channel.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Are the links affiliate links?</div>
+    <div class="faq-a">Yes. We are an Amazon Associate and earn a commission on qualifying purchases. The price you pay is always the same &mdash; affiliate links never increase the cost.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How often are deals posted?</div>
+    <div class="faq-a">We monitor Amazon continuously and post multiple deals every day. Our AI scans hundreds of categories to find the best discounts as soon as they appear.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I unsubscribe easily?</div>
+    <div class="faq-a">Yes. Every email has a one-click unsubscribe link. You can also unsubscribe directly at any time.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">What types of deals do you cover?</div>
+    <div class="faq-a">Electronics, kitchen appliances, clothing, toys, home goods, beauty, sports equipment, books &mdash; if Amazon discounts it by 30% or more, we find it and alert you.</div>
+  </div>
+</div>
 
-    <script>
-        console.log('Deals-Coupons-AI project loaded successfully');
-        // Global namespace for project (matches QA agent configuration)
-        window.DCAI = window.DCAI || {};
-        window.DCAI.init = function() {
-            console.log('DCAI namespace initialized');
-        };
-        window.DCAI.init();
-    </script>
+<footer>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/top-deals">Top Deals</a>
+    <a href="/about">About</a>
+    <a href="/download">Free PDF</a>
+    <a href="/api/unsubscribe?email=">Unsubscribe</a>
+  </div>
+  <p>Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
+  <p style="margin-top:4px">&copy; 2025 Coupons, Deals &amp; Steals. Amazon Associates participant.</p>
+</footer>
+
+<script>
+function subscribe(email, firstName, source, successEl, formEl) {
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email: email, first_name: firstName || '', source: source || 'web'})
+  }).then(function() {
+    if (formEl) formEl.style.display = 'none';
+    if (successEl) successEl.style.display = 'block';
+  }).catch(function() {
+    if (successEl) successEl.style.display = 'block';
+  });
+}
+
+document.getElementById('heroForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  subscribe(this.querySelector('[name=email]').value, this.querySelector('[name=first_name]').value, 'hero', document.getElementById('heroSuccess'), this);
+});
+
+document.getElementById('leadForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  subscribe(this.querySelector('[name=email]').value, '', 'lead_magnet', document.getElementById('leadSuccess'), this);
+});
+
+fetch('/deals.json').then(function(r){return r.json();}).then(function(deals){
+  var grid = document.getElementById('dealsFeed');
+  var show = deals.slice(0,12);
+  if (!show.length) { grid.innerHTML = '<div class="deals-loading">No deals yet &mdash; check back soon!</div>'; return; }
+  grid.innerHTML = show.map(function(d){
+    return '<a class="deal-card" href="/deals/'+(d.slug||'')+'">' +
+      (d.image_url ? '<img src="'+d.image_url+'" alt="'+(d.title||'').replace(/"/g,'')+'" loading="lazy">' : '<div style="height:200px;background:#222"></div>') +
+      '<div class="deal-card-body">' +
+        (d.category ? '<div class="deal-cat-badge">'+d.category+'</div>' : '') +
+        '<div class="deal-card-title">'+(d.title||'').slice(0,80)+'</div>' +
+        '<div class="deal-card-prices">' +
+          '<div class="deal-price-now">$'+(d.price ? parseFloat(d.price).toFixed(2) : '?')+'</div>' +
+          (d.original_price ? '<div class="deal-price-was">$'+parseFloat(d.original_price).toFixed(2)+'</div>' : '') +
+          (d.discount_pct ? '<div class="deal-off-badge">'+d.discount_pct+'% OFF</div>' : '') +
+        '</div>' +
+        '<div class="deal-card-cta">See Deal &rarr;</div>' +
+      '</div></a>';
+  }).join('');
+  var obs = new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.1});
+  document.querySelectorAll('.deal-card').forEach(function(c){obs.observe(c);});
+}).catch(function(){document.getElementById('dealsFeed').innerHTML='<div class="deals-loading">Could not load deals.</div>';});
+
+document.querySelectorAll('.faq-q').forEach(function(q){
+  q.addEventListener('click',function(){
+    var a=this.nextElementSibling, open=this.classList.contains('open');
+    document.querySelectorAll('.faq-q').forEach(function(qq){qq.classList.remove('open');qq.nextElementSibling.style.display='none';});
+    if(!open){this.classList.add('open');a.style.display='block';}
+  });
+});
+</script>
 </body>
 </html>
