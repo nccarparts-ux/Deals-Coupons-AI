@@ -1,0 +1,48 @@
+<\!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ seo_title }} | {{ group_name }}</title>
+  <meta name="description" content="{{ meta_description }}">
+  <link rel="canonical" href="{{ site_url }}/deals/{{ slug }}/">
+  <meta property="og:type" content="product">
+  <meta property="og:title" content="{{ seo_title }}">
+  <meta property="og:description" content="{{ meta_description }}">
+  <meta property="og:url" content="{{ site_url }}/deals/{{ slug }}/">
+  {%if image_url%}<meta property="og:image" content="{{ image_url }}">{%endif%}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ seo_title }}">
+  <meta name="twitter:description" content="{{ meta_description }}">
+  {%if image_url%}<meta name="twitter:image" content="{{ image_url }}">{%endif%}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": {{ title | tojson }},
+    "description": {{ deal_description | tojson }},
+    "image": {{ image_url | tojson }},
+    "url": {{ amazon_url | tojson }},
+    "brand": {"@type": "Brand", "name": "Amazon"},
+    "offers": {"@type": "Offer", "priceCurrency": "USD", "price": {{ price | tojson }}, "availability": "https://schema.org/InStock", "url": {{ amazon_url | tojson }}}
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+    {"@type":"ListItem","position":1,"name":"Home","item":"{{ site_url }}/"},
+    {"@type":"ListItem","position":2,"name":{{ category | tojson }},"item":"{{ site_url }}/top-deals.html"},
+    {"@type":"ListItem","position":3,"name":{{ title | tojson }},"item":"{{ site_url }}/deals/{{ slug }}/"}
+  ]}
+  </script>
+  {%if faq_pairs%}
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {%for q,a in faq_pairs%}
+    {"@type":"Question","name":{{q|tojson}},"acceptedAnswer":{"@type":"Answer","text":{{a|tojson}}}}{%if not loop.last%},{%endif%}
+    {%endfor%}
+  ]}
+  </script>
+  {%endif%}

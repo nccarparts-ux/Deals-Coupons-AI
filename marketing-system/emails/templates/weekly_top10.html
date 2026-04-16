@@ -1,0 +1,36 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>This Week's Top 10 Amazon Deals</title></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">
+  <tr><td style="background:#111114;padding:28px 32px;text-align:center">
+    <p style="margin:0 0 4px;font-size:28px;font-weight:900;color:#FF5E1A;letter-spacing:2px">TOP 10</p>
+    <p style="margin:0;font-size:14px;color:#aaa">Amazon Deals This Week &nbsp;|&nbsp; {DATE_RANGE}</p>
+  </td></tr>
+  <tr><td style="background:#ffffff;padding:28px 32px">
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
+      <tr style="background:#f9f9f9">
+        <th style="padding:8px 6px;font-size:12px;color:#999;text-align:left">#</th>
+        <th style="padding:8px 6px;font-size:12px;color:#999;text-align:left"></th>
+        <th style="padding:8px 6px;font-size:12px;color:#999;text-align:left">Deal</th>
+        <th style="padding:8px 6px;font-size:12px;color:#999;text-align:left">Off</th>
+        <th style="padding:8px 6px;font-size:12px;color:#999;text-align:left"></th>
+      </tr>
+      {DEALS_HTML}
+    </table>
+    <!-- PDF download -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f5;border:2px solid #FF5E1A;border-radius:6px;margin-top:28px"><tr>
+      <td style="padding:20px;text-align:center">
+        <p style="margin:0 0 10px;font-size:16px;font-weight:700;color:#111114">Download the PDF version</p>
+        <p style="margin:0 0 16px;font-size:13px;color:#555">Print-friendly, shareable, ad-free.</p>
+        <a href="{PDF_URL}" style="display:inline-block;background:#FF5E1A;color:#fff;padding:12px 28px;border-radius:4px;text-decoration:none;font-weight:700">Download PDF</a>
+      </td>
+    </tr></table>
+    <p style="margin:24px 0 0;text-align:center"><a href="{SITE_URL}" style="display:inline-block;background:#111114;color:#fff;padding:10px 24px;border-radius:4px;text-decoration:none;font-weight:700;font-size:14px">Browse Site</a></p>
+  </td></tr>
+  <tr><td style="background:#f4f4f4;padding:24px 32px;text-align:center">
+    <p style="margin:0 0 8px;font-size:12px;color:#999">Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
+    <p style="margin:0;font-size:12px;color:#999">123 Main St, Suite 100, City, ST 00000 &nbsp;|&nbsp; <a href="{UNSUBSCRIBE_URL}" style="color:#999">Unsubscribe</a></p>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>

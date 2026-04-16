@@ -1,0 +1,59 @@
+# Environment files — never commit secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.*
+!.env.template
+
+# Generated output — large and ephemeral
+/pdfs/
+/logs/
+
+# Python compiled / cache
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# AI/Agent memory files
+.agent_memory.json
+.ai_memory.json
+
+# Vercel
+.vercel
+
+# Node (if frontend tooling is added)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary / test files
+*.log
+temp_*.html
+deployed_*.html
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+playwright/.auth/
+
+# Archive — reference only, never push
+archive/
