@@ -28,17 +28,25 @@
     .filter-btn { background: #1a1a1f; border: 1px solid #333; color: #aaa; padding: 7px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-family: 'DM Sans'; transition: all .15s; }
     .filter-btn.active, .filter-btn:hover { background: #FF5E1A; border-color: #FF5E1A; color: #fff; }
     .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .deal-card { background: #1a1a1f; border-radius: 6px; overflow: hidden; text-decoration: none; color: #fff; display: block; transition: box-shadow .15s; }
+    .deal-card { background: #1a1a1f; border-radius: 6px; overflow: hidden; color: #fff; display: flex; flex-direction: column; transition: box-shadow .15s; }
     .deal-card:hover { box-shadow: 0 4px 20px rgba(255,94,26,.15); }
-    .deal-card img { width: 100%; height: 200px; object-fit: cover; background: #222; }
-    .deal-card-body { padding: 14px; }
+    .deal-card-img-link { display: block; text-decoration: none; flex-shrink: 0; }
+    .deal-card-img-link img { width: 100%; height: 200px; object-fit: cover; background: #222; display: block; }
+    .deal-card-img-link .deal-img-placeholder { height: 200px; background: #222; display: block; }
+    .deal-card-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
     .deal-cat-badge { display: inline-block; background: #FF5E1A22; color: #FF5E1A; border: 1px solid #FF5E1A33; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .deal-card-title-link { text-decoration: none; color: #fff; }
     .deal-card-title { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .deal-card-prices { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
     .deal-price-now { font-family: 'Bebas Neue'; font-size: 24px; color: #FF5E1A; }
     .deal-price-was { font-size: 13px; color: #555; text-decoration: line-through; }
     .deal-off-badge { margin-left: auto; background: #FF5E1A; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; }
-    .deal-card-cta { display: block; margin-top: 12px; text-align: center; background: #FF5E1A; color: #fff; padding: 8px; border-radius: 3px; font-size: 13px; font-weight: 700; }
+    .deal-card-cta { display: block; margin-top: 12px; text-align: center; background: #FF5E1A; color: #fff; padding: 8px; border-radius: 3px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .deal-card-cta:hover { background: #e04d0f; }
+    .sort-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .sort-bar label { font-size: 13px; color: #aaa; }
+    .sort-select { background: #1a1a1f; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 7px 12px; font-size: 13px; font-family: 'DM Sans'; cursor: pointer; }
+    .sort-select:focus { outline: none; border-color: #FF5E1A; }
     .loading { color: #555; text-align: center; padding: 60px; }
     .cta-section { background: #FF5E1A; border-radius: 8px; padding: 32px; text-align: center; margin-top: 48px; }
     .cta-section h2 { font-family: 'Bebas Neue'; font-size: 32px; margin-bottom: 8px; }
@@ -63,10 +71,21 @@
 
 <div class="container">
   <h1>Top Amazon Deals This Week</h1>
-  <p class="subtitle">Sorted by biggest discount. Updated automatically as new deals come in.</p>
+  <p class="subtitle">Updated automatically as new deals come in. Filter by category or sort to find what you need.</p>
 
   <div class="filter-bar" id="filterBar">
     <button class="filter-btn active" data-cat="all" onclick="filterDeals('all',this)">All</button>
+  </div>
+
+  <div class="sort-bar">
+    <label for="dealSort">Sort by:</label>
+    <select class="sort-select" id="dealSort" onchange="applySort()">
+      <option value="discount">Biggest Discount</option>
+      <option value="newest">Newest First</option>
+      <option value="price_asc">Price: Low to High</option>
+      <option value="price_desc">Price: High to Low</option>
+      <option value="savings">Most Savings ($)</option>
+    </select>
   </div>
 
   <div class="deals-grid" id="dealsGrid">
@@ -91,21 +110,38 @@
 
 <script>
 var allDeals = [];
+var activeCat = 'all';
 var cats = new Set(['all']);
 
 function cardHtml(d) {
-  return '<a class="deal-card" href="/deals/'+(d.slug||'')+'">' +
-    (d.image_url ? '<img src="'+d.image_url+'" alt="'+(d.title||'').replace(/"/g,'')+'" loading="lazy">' : '<div style="height:200px;background:#222"></div>') +
+  var dealPage = '/deals/'+(d.slug||'');
+  var buyUrl = d.amazon_url || dealPage;
+  var title = (d.title||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var alt = (d.title||'').replace(/"/g,'');
+  return '<div class="deal-card">' +
+    '<a class="deal-card-img-link" href="'+dealPage+'">' +
+      (d.image_url ? '<img src="'+d.image_url+'" alt="'+alt+'" loading="lazy">' : '<div class="deal-img-placeholder"></div>') +
+    '</a>' +
     '<div class="deal-card-body">' +
       (d.category ? '<div class="deal-cat-badge">'+d.category+'</div>' : '') +
-      '<div class="deal-card-title">'+(d.title||'').slice(0,80)+'</div>' +
+      '<a class="deal-card-title-link" href="'+dealPage+'"><div class="deal-card-title">'+title.slice(0,80)+'</div></a>' +
       '<div class="deal-card-prices">' +
         '<div class="deal-price-now">$'+(d.price ? parseFloat(d.price).toFixed(2) : '?')+'</div>' +
         (d.original_price ? '<div class="deal-price-was">$'+parseFloat(d.original_price).toFixed(2)+'</div>' : '') +
         (d.discount_pct ? '<div class="deal-off-badge">'+d.discount_pct+'% OFF</div>' : '') +
       '</div>' +
-      '<div class="deal-card-cta">See Deal &rarr;</div>' +
-    '</div></a>';
+      '<a class="deal-card-cta" href="'+buyUrl+'" target="_blank" rel="noopener nofollow sponsored">See Deal &rarr;</a>' +
+    '</div></div>';
+}
+
+function sortDeals(deals, mode) {
+  var arr = deals.slice();
+  if (mode === 'discount') arr.sort(function(a,b){ return (b.discount_pct||0)-(a.discount_pct||0); });
+  else if (mode === 'newest') { /* keep original order */ }
+  else if (mode === 'price_asc') arr.sort(function(a,b){ return (a.price||0)-(b.price||0); });
+  else if (mode === 'price_desc') arr.sort(function(a,b){ return (b.price||0)-(a.price||0); });
+  else if (mode === 'savings') arr.sort(function(a,b){ return ((b.original_price||0)-(b.price||0))-((a.original_price||0)-(a.price||0)); });
+  return arr;
 }
 
 function renderDeals(deals) {
@@ -114,16 +150,22 @@ function renderDeals(deals) {
   grid.innerHTML = deals.map(cardHtml).join('');
 }
 
+function applySort() {
+  var mode = document.getElementById('dealSort').value;
+  var base = activeCat === 'all' ? allDeals : allDeals.filter(function(d){return d.category===activeCat;});
+  renderDeals(sortDeals(base, mode));
+}
+
 function filterDeals(cat, btn) {
   document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
-  var filtered = cat === 'all' ? allDeals : allDeals.filter(function(d){return d.category===cat;});
-  renderDeals(filtered);
+  activeCat = cat;
+  applySort();
 }
 
 fetch('/deals.json').then(function(r){return r.json();}).then(function(deals){
-  allDeals = deals.sort(function(a,b){return (b.discount_pct||0)-(a.discount_pct||0);});
-  allDeals.forEach(function(d){if(d.category) cats.add(d.category);});
+  allDeals = deals; // original order = newest first from publisher
+  deals.forEach(function(d){if(d.category) cats.add(d.category);});
   var bar = document.getElementById('filterBar');
   cats.forEach(function(c){
     if(c==='all') return;
@@ -134,7 +176,7 @@ fetch('/deals.json').then(function(r){return r.json();}).then(function(deals){
     btn.onclick = function(){filterDeals(c,this);};
     bar.appendChild(btn);
   });
-  renderDeals(allDeals);
+  applySort();
 }).catch(function(){
   document.getElementById('dealsGrid').innerHTML = '<div class="loading">Could not load deals.</div>';
 });
