@@ -39,7 +39,7 @@ def tg_alert(message: str, key: str = "generic") -> None:
     from datetime import timedelta
     now = datetime.now(timezone.utc)
     last = _last_alert.get(key)
-    if last and (now - last).total_seconds() < 3600:
+    if last and (now - last).total_seconds() < 300:
         return
     _last_alert[key] = now
 
