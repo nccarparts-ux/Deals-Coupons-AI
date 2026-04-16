@@ -8,7 +8,7 @@ const SUPABASE_KEY  = process.env.SUPABASE_KEY;
 const RESEND_KEY    = process.env.RESEND_API_KEY;
 const FROM_EMAIL    = process.env.FROM_EMAIL  || 'onboarding@resend.dev';
 const FROM_NAME     = process.env.FROM_NAME   || 'Coupons, Deals & Steals';
-const SITE_URL      = (process.env.SITE_URL   || 'https://deals-coupons-ai.vercel.app').replace(/\/$/, '');
+const SITE_URL      = (process.env.SITE_URL   || 'https://bidyarddeals.com').trim().replace(/\/$/, '');
 
 function supabase() {
   return createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -36,7 +36,7 @@ async function sendConfirmation(email, firstName, token) {
     body: JSON.stringify({
       from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: [email],
-      subject: 'Confirm your email to get free Amazon deals',
+      subject: `${name !== 'there' ? name + ', confirm' : 'Confirm'} your deal alerts`,
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#111114;color:#fff;padding:32px;border-radius:8px">
           <h2 style="font-family:sans-serif;color:#FF5E1A;margin:0 0 16px">One click to confirm</h2>
