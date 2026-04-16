@@ -26,6 +26,7 @@ archive/
 *.txt
 *.md
 !README.md
+!robots.txt
 !CLAUDE.md
 !ADMIN_SETUP.md
 !skills/*.md
