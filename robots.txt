@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://deals-coupons-ai.vercel.app/sitemap.xml
+Sitemap: https://bidyarddeals.com/sitemap.xml
