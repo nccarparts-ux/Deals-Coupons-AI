@@ -1,5 +1,5 @@
 """
-agents/email_engine.py -- Brevo transactional email engine.
+agents/email_engine.py -- Resend transactional email engine.
 """
 import logging
 import os
@@ -10,28 +10,23 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env", override=True)
 
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
+import resend
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from db import supabase_insert, supabase_select, supabase_update
 
 log = logging.getLogger("email_engine")
 
-FROM_EMAIL = os.environ.get("FROM_EMAIL", "")
-FROM_NAME  = os.environ.get("FROM_NAME", "Coupons, Deals & Steals")
-SITE_URL   = os.environ.get("SITE_URL", "")
-TG_LINK    = os.environ.get("TELEGRAM_INVITE_LINK", "#")
-FB_LINK    = os.environ.get("FACEBOOK_GROUP_LINK", "#")
-BREVO_KEY  = os.environ.get("BREVO_API_KEY", "")
+FROM_EMAIL  = os.environ.get("FROM_EMAIL", "onboarding@resend.dev")
+FROM_NAME   = os.environ.get("FROM_NAME", "Coupons, Deals & Steals")
+SITE_URL    = os.environ.get("SITE_URL", "")
+TG_LINK     = os.environ.get("TELEGRAM_INVITE_LINK", "#")
+FB_LINK     = os.environ.get("FACEBOOK_GROUP_LINK", "#")
+RESEND_KEY  = os.environ.get("RESEND_API_KEY", "")
+
+resend.api_key = RESEND_KEY
 
 TEMPLATES_DIR = Path(__file__).parent.parent / "emails" / "templates"
-
-
-def _api() -> sib_api_v3_sdk.TransactionalEmailsApi:
-    cfg = sib_api_v3_sdk.Configuration()
-    cfg.api_key["api-key"] = BREVO_KEY
-    return sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(cfg))
 
 
 def _render(template_name: str, replacements: dict) -> str:
@@ -44,17 +39,16 @@ def _render(template_name: str, replacements: dict) -> str:
 
 def _send(to_email: str, to_name: str, subject: str, html: str,
           template_name: str = "", subscriber_id: int | None = None) -> bool:
-    if not BREVO_KEY or not FROM_EMAIL:
-        log.warning("Brevo not configured — skipping send to %s", to_email)
+    if not RESEND_KEY or not FROM_EMAIL:
+        log.warning("Resend not configured — skipping send to %s", to_email)
         return False
     try:
-        msg = sib_api_v3_sdk.SendSmtpEmail(
-            sender={"email": FROM_EMAIL, "name": FROM_NAME},
-            to=[{"email": to_email, "name": to_name}],
-            subject=subject,
-            html_content=html,
-        )
-        _api().send_transac_email(msg)
+        resend.Emails.send({
+            "from": f"{FROM_NAME} <{FROM_EMAIL}>",
+            "to": [to_email],
+            "subject": subject,
+            "html": html,
+        })
         supabase_insert("email_log", {
             "subscriber_id": subscriber_id,
             "template_name": template_name,
@@ -64,8 +58,8 @@ def _send(to_email: str, to_name: str, subject: str, html: str,
         })
         log.info("Sent '%s' to %s", template_name, to_email)
         return True
-    except ApiException as e:
-        log.error("Brevo error sending to %s: %s", to_email, e)
+    except Exception as e:
+        log.error("Resend error sending to %s: %s", to_email, e)
         return False
 
 
