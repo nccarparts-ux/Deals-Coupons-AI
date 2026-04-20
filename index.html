@@ -724,21 +724,35 @@ document.getElementById('leadForm').addEventListener('submit', function(e) {
 document.getElementById('modalForm').addEventListener('submit', function(e) {
   e.preventDefault();
   subscribe(this.querySelector('[name=email]').value, this.querySelector('[name=first_name]').value, 'modal', document.getElementById('modalSuccess'), this);
+  localStorage.setItem('bd_subscribed', '1'); // never show modal again after subscribing
 });
 
-function closeModal() { document.getElementById('emailModal').classList.remove('open'); }
+function closeModal() {
+  document.getElementById('emailModal').classList.remove('open');
+  localStorage.setItem('bd_modal_ts', Date.now().toString()); // record dismissal time
+}
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalSkip').addEventListener('click', closeModal);
 document.getElementById('emailModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
 var _modalShown = false;
+var MODAL_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+
+function shouldShowModal() {
+  if (localStorage.getItem('bd_subscribed')) return false;       // already subscribed — never show
+  var last = localStorage.getItem('bd_modal_ts');
+  if (!last) return true;                                         // first ever visit — show
+  return (Date.now() - parseInt(last, 10)) > MODAL_INTERVAL;     // 7+ days since last dismissal — show
+}
+
 function showModal() {
   if (_modalShown) return;
+  if (!shouldShowModal()) return;
   _modalShown = true;
-  sessionStorage.setItem('modal_shown', '1');
   document.getElementById('emailModal').classList.add('open');
 }
-if (!sessionStorage.getItem('modal_shown')) {
+
+if (shouldShowModal()) {
   setTimeout(showModal, 5000);
   window.addEventListener('scroll', function() {
     if ((window.scrollY / (document.body.scrollHeight - window.innerHeight || 1)) > 0.5) showModal();
