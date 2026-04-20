@@ -320,7 +320,7 @@
     .sticky-label { display: none; }
 
     @media (max-width: 640px) {
-      .sticky-social { right: 0; bottom: 68px; gap: 8px; }
+      .sticky-social { right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); gap: 8px; }
       .sticky-social a {
         width: auto;
         height: 40px;
