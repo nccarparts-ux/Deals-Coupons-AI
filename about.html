@@ -3,45 +3,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About | Coupons, Deals &amp; Steals</title>
-  <meta name="description" content="About Coupons, Deals &amp; Steals. We use AI to find the deepest Amazon discounts and alert you instantly &mdash; 100% free.">
-  <link rel="canonical" href="https://deals-coupons-ai.vercel.app/about">
+  <title>About | BidYard Deals</title>
+  <meta name="description" content="About BidYard Deals. We use AI to find the deepest Amazon discounts and alert you instantly &mdash; 100% free.">
+  <link rel="canonical" href="https://bidyarddeals.com/about">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #111114; color: #fff; font-family: 'DM Sans', sans-serif; line-height: 1.6; }
-    nav { background: #0a0a0d; padding: 14px 32px; display: flex; align-items: center; gap: 28px; border-bottom: 1px solid #1a1a1f; }
-    .nav-brand { font-family: 'Bebas Neue'; font-size: 26px; color: #FF5E1A; text-decoration: none; }
-    nav a { color: #aaa; text-decoration: none; font-size: 14px; }
-    nav a:hover { color: #fff; }
-    .nav-tg { margin-left: auto; background: #FF5E1A; color: #fff !important; padding: 8px 18px; border-radius: 4px; font-weight: 700; font-size: 13px; }
-    .nav-fb { background: #1877F2; color: #fff !important; padding: 8px 18px; border-radius: 4px; font-weight: 700; font-size: 13px; }
-    .container { max-width: 720px; margin: 0 auto; padding: 60px 32px 80px; }
-    h1 { font-family: 'Bebas Neue'; font-size: 52px; margin-bottom: 24px; }
-    h2 { font-family: 'Bebas Neue'; font-size: 30px; margin: 36px 0 12px; color: #FF5E1A; }
-    p { color: #bbb; font-size: 16px; line-height: 1.8; margin-bottom: 16px; }
-    .highlight { background: #1a1a1f; border-left: 3px solid #FF5E1A; padding: 16px 20px; border-radius: 0 4px 4px 0; margin: 24px 0; }
-    .highlight p { color: #fff; margin: 0; }
-    .signup-box { background: #1a1a1f; border-radius: 8px; padding: 32px; margin-top: 48px; text-align: center; }
-    .signup-box h3 { font-family: 'Bebas Neue'; font-size: 26px; margin-bottom: 8px; }
-    .signup-box p { font-size: 14px; margin-bottom: 18px; }
-    .signup-form { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
-    .signup-form input { flex: 1; min-width: 200px; background: #0d0d10; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 11px 14px; font-size: 14px; font-family: 'DM Sans'; }
-    .signup-form button { background: #FF5E1A; color: #fff; border: none; border-radius: 4px; padding: 11px 22px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'DM Sans'; }
-    .signup-success { display: none; color: #4ade80; font-weight: 600; margin-top: 10px; }
-    .tg-btn { display: inline-block; background: #229ED9; color: #fff; font-weight: 700; padding: 12px 28px; border-radius: 4px; text-decoration: none; font-size: 15px; margin-top: 16px; }
-    .fb-btn { display: inline-block; background: #1877F2; color: #fff; font-weight: 700; padding: 12px 28px; border-radius: 4px; text-decoration: none; font-size: 15px; margin-top: 16px; margin-left: 8px; }
-    footer { background: #0a0a0d; border-top: 1px solid #1a1a1f; padding: 28px 32px; text-align: center; color: #444; font-size: 13px; margin-top: 60px; }
-    footer a { color: #666; text-decoration: none; margin: 0 10px; }
-    footer a:hover { color: #FF5E1A; }
+    body { background: #f4f4f4; color: #1a1a1a; font-family: 'Inter', sans-serif; line-height: 1.6; }
+
+    /* NAV */
+    nav {
+      background: #ffffff;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      border-bottom: 1px solid #e8e8e8;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-weight: 800;
+      font-size: 22px;
+      color: #c0392b;
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    nav a {
+      color: #444;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    nav a:hover { color: #c0392b; }
+    .nav-tg {
+      margin-left: auto;
+      background: #c0392b;
+      color: #fff !important;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .nav-tg:hover { background: #a93226 !important; }
+    .nav-fb {
+      background: #1877F2;
+      color: #fff !important;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .nav-fb:hover { background: #1464d8 !important; }
+
+    /* LAYOUT */
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .content-card {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 40px;
+      border: 1px solid #e8e8e8;
+    }
+
+    /* TYPOGRAPHY */
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #c0392b;
+      margin: 32px 0 10px;
+    }
+    p {
+      color: #555;
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+    p a { color: #c0392b; text-decoration: none; }
+    p a:hover { text-decoration: underline; }
+
+    /* HIGHLIGHT BOX */
+    .highlight {
+      background: #fff8f7;
+      border-left: 3px solid #c0392b;
+      padding: 16px 20px;
+      border-radius: 0 6px 6px 0;
+      margin: 24px 0;
+    }
+    .highlight p {
+      color: #1a1a1a;
+      margin: 0;
+    }
+
+    /* SIGNUP BOX */
+    .signup-box {
+      background: #f8f8f8;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 32px;
+      margin-top: 40px;
+      text-align: center;
+    }
+    .signup-box h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+    .signup-box p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 18px;
+    }
+    .signup-form {
+      display: flex;
+      gap: 8px;
+      max-width: 400px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .signup-form input {
+      flex: 1;
+      min-width: 200px;
+      background: #ffffff;
+      border: 1px solid #e8e8e8;
+      color: #1a1a1a;
+      border-radius: 4px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+    .signup-form input:focus { border-color: #c0392b; }
+    .signup-form input::placeholder { color: #999; }
+    .signup-form button {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 11px 22px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+    }
+    .signup-form button:hover { background: #a93226; }
+    .signup-success {
+      display: none;
+      color: #27ae60;
+      font-weight: 600;
+      margin-top: 10px;
+      font-size: 15px;
+    }
+
+    /* COMMUNITY BUTTONS */
+    .community-btns { margin-top: 20px; }
+    .tg-btn {
+      display: inline-block;
+      background: #229ED9;
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 15px;
+      transition: background 0.15s;
+    }
+    .tg-btn:hover { background: #1a8bbf; }
+    .fb-btn {
+      display: inline-block;
+      background: #1877F2;
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 15px;
+      margin-left: 8px;
+      transition: background 0.15s;
+    }
+    .fb-btn:hover { background: #1464d8; }
+
+    /* FOOTER */
+    footer {
+      background: #1a1a1a;
+      padding: 36px 24px;
+      text-align: center;
+      color: #888;
+      font-size: 13px;
+      margin-top: 0;
+    }
+    footer a {
+      color: #aaa;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    footer a:hover { color: #c0392b; }
+    footer p { color: #888; margin-top: 8px; font-size: 13px; }
   </style>
 </head>
 <body>
 
 <nav>
-  <a class="nav-brand" href="/">DEAL SNIPER</a>
+  <a class="nav-brand" href="/">BidYard Deals</a>
   <a href="/">Home</a>
   <a href="/top-deals">Top Deals</a>
   <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
@@ -49,41 +226,45 @@
 </nav>
 
 <div class="container">
-  <h1>About Coupons, Deals &amp; Steals</h1>
+  <div class="content-card">
+    <h1>About BidYard Deals</h1>
 
-  <h2>Who We Are</h2>
-  <p>Coupons, Deals &amp; Steals is a free deal alert service that uses AI to monitor Amazon 24/7 and surface the biggest price drops across every product category.</p>
-  <p>We post to our Telegram channel the moment we find a deal at 30% off or more &mdash; so you never have to spend time searching for discounts.</p>
+    <h2>Who We Are</h2>
+    <p>BidYard Deals is a free deal alert service that uses AI to monitor Amazon 24/7 and surface the biggest price drops across every product category.</p>
+    <p>We post to our Telegram channel the moment we find a deal at 30% off or more &mdash; so you never have to spend time searching for discounts.</p>
 
-  <h2>How It Works</h2>
-  <p>Our system scans Amazon continuously, scoring each deal based on discount percentage, product rating, and category demand. Only the best deals make it through.</p>
-  <p>When a qualifying deal is detected, our AI writes a full description and SEO page so you can find deals through Google too &mdash; not just our channel.</p>
+    <h2>How It Works</h2>
+    <p>Our system scans Amazon continuously, scoring each deal based on discount percentage, product rating, and category demand. Only the best deals make it through.</p>
+    <p>When a qualifying deal is detected, our AI writes a full description and SEO page so you can find deals through Google too &mdash; not just our channel.</p>
 
-  <div class="highlight">
-    <p>We cover electronics, kitchen appliances, clothing, toys, home goods, beauty, sports equipment, books, and more. If Amazon discounts it by 30% or more, we find it.</p>
+    <div class="highlight">
+      <p>We cover electronics, kitchen appliances, clothing, toys, home goods, beauty, sports equipment, books, and more. If Amazon discounts it by 30% or more, we find it.</p>
+    </div>
+
+    <h2>Why It's Free</h2>
+    <p>We are a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.</p>
+    <p>When you purchase through our links, we may earn a small commission at no extra cost to you. This is how we fund the service and keep it free for everyone.</p>
+
+    <h2>Affiliate Disclosure</h2>
+    <p>All product links on this site are Amazon affiliate links. We are compensated for qualifying purchases made through these links. The price you pay is always the same &mdash; affiliate links never increase the cost of a product.</p>
+    <p>We only share deals we believe are genuinely good value. Our editorial opinions are our own and are not influenced by Amazon or any retailer.</p>
+
+    <h2>Contact</h2>
+    <p>Questions or feedback? Reach us through our <a href="https://t.me/Coupons_Deals_Steals">Telegram channel</a> or <a href="https://www.facebook.com/groups/826906386379276" style="color:#1877F2">Facebook group</a>.</p>
   </div>
-
-  <h2>Why It's Free</h2>
-  <p>We are a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.com.</p>
-  <p>When you purchase through our links, we may earn a small commission at no extra cost to you. This is how we fund the service and keep it free for everyone.</p>
-
-  <h2>Affiliate Disclosure</h2>
-  <p>All product links on this site are Amazon affiliate links. We are compensated for qualifying purchases made through these links. The price you pay is always the same &mdash; affiliate links never increase the cost of a product.</p>
-  <p>We only share deals we believe are genuinely good value. Our editorial opinions are our own and are not influenced by Amazon or any retailer.</p>
-
-  <h2>Contact</h2>
-  <p>Questions or feedback? Reach us through our <a href="https://t.me/Coupons_Deals_Steals" style="color:#FF5E1A">Telegram channel</a> or <a href="https://www.facebook.com/groups/826906386379276" style="color:#1877F2">Facebook group</a>.</p>
 
   <div class="signup-box">
     <h3>Get Free Deal Alerts</h3>
-    <p style="color:#aaa">Subscribe for daily deal digests straight to your inbox.</p>
+    <p>Subscribe for daily deal digests straight to your inbox.</p>
     <form class="signup-form" id="aboutForm">
       <input type="email" name="email" placeholder="your@email.com" required>
       <button type="submit">Subscribe Free</button>
     </form>
     <div class="signup-success" id="aboutSuccess">You're in! Check your inbox to confirm.</div>
-    <a href="https://t.me/Coupons_Deals_Steals" class="tg-btn" target="_blank" rel="noopener">Join Telegram</a>
-    <a href="https://www.facebook.com/groups/826906386379276" class="fb-btn" target="_blank" rel="noopener">Join Facebook Group</a>
+    <div class="community-btns">
+      <a href="https://t.me/Coupons_Deals_Steals" class="tg-btn" target="_blank" rel="noopener">Join Telegram</a>
+      <a href="https://www.facebook.com/groups/826906386379276" class="fb-btn" target="_blank" rel="noopener">Join Facebook Group</a>
+    </div>
   </div>
 </div>
 
@@ -92,8 +273,8 @@
   <a href="/top-deals">Top Deals</a>
   <a href="/download">Free PDF</a>
   <a href="/api/unsubscribe?email=">Unsubscribe</a>
-  <p style="margin-top:8px">Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
-  <p style="margin-top:4px">&copy; 2025 Coupons, Deals &amp; Steals</p>
+  <p>Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
+  <p>&copy; 2025 BidYard Deals</p>
 </footer>
 
 <script>
