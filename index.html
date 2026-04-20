@@ -65,37 +65,37 @@
     .hero-inner { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
 
     /* Gradient blob animation */
-    .hero-blob { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform; filter: blur(72px); }
+    .hero-blob { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform; filter: blur(40px); }
     .hero-blob-1 {
-      width: 560px; height: 420px;
-      background: radial-gradient(ellipse at center, rgba(192,57,43,0.16) 0%, transparent 68%);
-      top: -140px; right: -100px;
+      width: 480px; height: 380px;
+      background: radial-gradient(ellipse at center, rgba(192,57,43,0.28) 0%, rgba(192,57,43,0.10) 40%, transparent 70%);
+      top: -80px; right: -60px;
       animation: hblob1 14s ease-in-out infinite alternate;
     }
     .hero-blob-2 {
-      width: 400px; height: 360px;
-      background: radial-gradient(ellipse at center, rgba(231,76,60,0.11) 0%, transparent 68%);
-      bottom: -100px; left: -80px;
+      width: 380px; height: 340px;
+      background: radial-gradient(ellipse at center, rgba(231,76,60,0.22) 0%, rgba(231,76,60,0.08) 40%, transparent 70%);
+      bottom: -60px; left: -60px;
       animation: hblob2 18s ease-in-out infinite alternate;
     }
     .hero-blob-3 {
-      width: 300px; height: 300px;
-      background: radial-gradient(ellipse at center, rgba(255,150,100,0.13) 0%, transparent 68%);
-      top: 40%; left: 55%;
+      width: 260px; height: 260px;
+      background: radial-gradient(ellipse at center, rgba(255,120,80,0.20) 0%, rgba(255,120,80,0.06) 40%, transparent 70%);
+      top: 50%; left: 58%;
       transform: translate(-50%, -50%);
       animation: hblob3 11s ease-in-out infinite alternate;
     }
     @keyframes hblob1 {
       from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(-50px, 40px) scale(1.12); }
+      to   { transform: translate(-40px, 30px) scale(1.1); }
     }
     @keyframes hblob2 {
       from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(40px, -30px) scale(1.08); }
+      to   { transform: translate(35px, -25px) scale(1.08); }
     }
     @keyframes hblob3 {
       from { transform: translate(-50%, -50%) scale(1); }
-      to   { transform: translate(-50%, -50%) translate(30px, -20px) scale(1.18); }
+      to   { transform: translate(calc(-50% + 28px), calc(-50% - 18px)) scale(1.15); }
     }
     @media (prefers-reduced-motion: reduce) { .hero-blob { animation: none; } }
     .hero h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; color: #1a1a1a; line-height: 1.1; margin-bottom: 14px; }
@@ -565,7 +565,7 @@ function showModal() {
   document.getElementById('emailModal').classList.add('open');
 }
 if (!sessionStorage.getItem('modal_shown')) {
-  setTimeout(showModal, 9000);
+  setTimeout(showModal, 5000);
   window.addEventListener('scroll', function() {
     if ((window.scrollY / (document.body.scrollHeight - window.innerHeight || 1)) > 0.5) showModal();
   }, {passive: true});
