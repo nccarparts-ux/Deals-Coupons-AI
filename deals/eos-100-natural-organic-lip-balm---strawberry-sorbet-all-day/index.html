@@ -168,6 +168,35 @@
       .price-now { font-size: 34px; }
       .cta-btn { font-size: 16px; padding: 14px 20px; }
     }
+
+    .sticky-social { display: none; }
+    @media (max-width: 640px) {
+      .sticky-social {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: fixed;
+        right: 0;
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        z-index: 90;
+      }
+      .sticky-social a {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        height: 40px;
+        padding: 0 14px 0 12px;
+        border-radius: 20px 0 0 20px;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: -2px 2px 10px rgba(0,0,0,0.18);
+        white-space: nowrap;
+      }
+      .sticky-tg { background: #229ED9; }
+      .sticky-fb { background: #1877F2; }
+    }
   </style>
 </head>
 <body>
@@ -287,6 +316,13 @@
   <p>Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
   <p style="margin-top:4px">&copy; 2025 Coupons, Deals & Steals</p>
 </footer>
+
+<div class="sticky-social" aria-label="Social channels">
+  <a class="sticky-tg" href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener" aria-label="Join Telegram">&#9992;<span> Telegram</span></a>
+  
+  <a class="sticky-fb" href="https://www.facebook.com/groups/826906386379276" target="_blank" rel="noopener" aria-label="Join Facebook">f<span> Facebook</span></a>
+  
+</div>
 
 <script>
 document.querySelectorAll('.faq-q').forEach(function(q) {
