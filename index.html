@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Free Amazon Deal Alerts &mdash; Price Drops &amp; Coupons | Coupons, Deals &amp; Steals</title>
-  <meta name="description" content="Get free Amazon deal alerts delivered instantly. We find electronics, kitchen, clothing, and toy deals at 30-80% off. Join free &mdash; no spam.">
-  <link rel="canonical" href="https://deals-coupons-ai.vercel.app/">
+  <title>Best Daily Deals &amp; Discounts &mdash; Amazon Price Drops | BidYard Deals</title>
+  <meta name="description" content="Find the best Amazon deals and discounts updated daily. Electronics, kitchen, clothing, toys and more at 30-80% off. Free alerts, no spam.">
+  <link rel="canonical" href="https://bidyarddeals.com/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Free Amazon Deal Alerts | Coupons, Deals &amp; Steals">
+  <meta property="og:title" content="Best Daily Deals &amp; Discounts | BidYard Deals">
   <meta property="og:description" content="We hunt the deepest Amazon discounts and alert you instantly. 100% free.">
-  <meta property="og:url" content="https://deals-coupons-ai.vercel.app/">
+  <meta property="og:url" content="https://bidyarddeals.com/">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Free Amazon Deal Alerts | Coupons, Deals &amp; Steals">
+  <meta name="twitter:title" content="Best Daily Deals &amp; Discounts | BidYard Deals">
   <meta name="twitter:description" content="We hunt the deepest Amazon discounts and alert you instantly. 100% free.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,14 +19,15 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "SiteNavigationElement",
-    "name": ["Home", "Top Deals", "About", "Download"],
-    "url": [
-      "https://deals-coupons-ai.vercel.app/",
-      "https://deals-coupons-ai.vercel.app/top-deals",
-      "https://deals-coupons-ai.vercel.app/about",
-      "https://deals-coupons-ai.vercel.app/download"
-    ]
+    "@type": "WebSite",
+    "name": "BidYard Deals",
+    "url": "https://bidyarddeals.com",
+    "description": "Best daily Amazon deals and discounts updated continuously",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://bidyarddeals.com/top-deals?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
   }
   </script>
   <style>
@@ -36,222 +37,293 @@
 
     .alert-bar { background: #FF5E1A; color: #fff; text-align: center; padding: 10px 16px; font-size: 14px; font-weight: 600; }
 
-    nav { background: #0a0a0d; padding: 14px 32px; display: flex; align-items: center; gap: 28px; border-bottom: 1px solid #1a1a1f; position: sticky; top: 0; z-index: 100; }
+    header nav { background: #0a0a0d; padding: 14px 32px; display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #1a1a1f; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
     .nav-brand { font-family: 'Bebas Neue'; font-size: 26px; color: #FF5E1A; text-decoration: none; }
-    nav a { color: #aaa; text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
-    nav a:hover { color: #fff; }
+    header nav a { color: #aaa; text-decoration: none; font-size: 14px; font-weight: 500; transition: color .15s; }
+    header nav a:hover { color: #fff; }
     .nav-tg { margin-left: auto; background: #FF5E1A; color: #fff !important; padding: 8px 18px; border-radius: 4px; font-weight: 700; font-size: 13px; }
     .nav-fb { background: #1877F2; color: #fff !important; padding: 8px 18px; border-radius: 4px; font-weight: 700; font-size: 13px; }
 
-    .hero { text-align: center; padding: 80px 24px 64px; max-width: 800px; margin: 0 auto; }
-    .hero h1 { font-family: 'Bebas Neue'; font-size: clamp(64px, 12vw, 96px); line-height: .95; margin-bottom: 20px; }
+    .hero { text-align: center; padding: 72px 24px 56px; max-width: 800px; margin: 0 auto; }
+    .hero h1 { font-family: 'Bebas Neue'; font-size: clamp(48px, 10vw, 80px); line-height: 1; margin-bottom: 14px; }
     .hero h1 span { color: #FF5E1A; }
-    .hero-sub { font-size: 18px; color: #aaa; max-width: 520px; margin: 0 auto 36px; }
-
+    .hero-intro { font-size: 17px; color: #aaa; max-width: 520px; margin: 0 auto 32px; }
     .hero-form { display: flex; gap: 8px; max-width: 520px; margin: 0 auto 12px; flex-wrap: wrap; justify-content: center; }
-    .hero-form input { flex: 1; min-width: 160px; background: #1a1a1f; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 13px 16px; font-size: 15px; font-family: 'DM Sans'; }
+    .hero-form input { flex: 1; min-width: 150px; background: #1a1a1f; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 13px 16px; font-size: 15px; font-family: 'DM Sans'; }
     .hero-form input::placeholder { color: #555; }
     .hero-form button { background: #FF5E1A; color: #fff; border: none; border-radius: 4px; padding: 13px 24px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: 'DM Sans'; }
     .hero-success { display: none; color: #4ade80; font-weight: 600; font-size: 15px; margin-bottom: 12px; }
-
-    .hero-social { display: flex; gap: 12px; justify-content: center; margin-top: 18px; }
+    .hero-social { display: flex; gap: 12px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
     .social-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 4px; font-size: 14px; font-weight: 700; text-decoration: none; }
     .social-btn-tg { background: #229ED9; color: #fff; }
     .social-proof { font-size: 13px; color: #555; margin-top: 10px; }
 
-    .section { padding: 64px 32px; max-width: 1200px; margin: 0 auto; }
-    .section-title { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 32px; }
-
-    .deals-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
-    .deals-controls label { font-size: 13px; color: #aaa; margin-right: 6px; }
+    .deals-section { padding: 56px 24px; max-width: 1200px; margin: 0 auto; }
+    .deals-section + .deals-section { padding-top: 0; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+    .section-title { font-family: 'Bebas Neue'; font-size: 36px; }
+    .section-link { font-size: 13px; color: #FF5E1A; text-decoration: none; font-weight: 600; }
+    .section-link:hover { text-decoration: underline; }
+    .deals-controls { display: flex; align-items: center; gap: 8px; }
+    .deals-controls label { font-size: 13px; color: #aaa; }
     .sort-select { background: #1a1a1f; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 7px 12px; font-size: 13px; font-family: 'DM Sans'; cursor: pointer; }
     .sort-select:focus { outline: none; border-color: #FF5E1A; }
-    .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-    .deal-card { background: #1a1a1f; border-radius: 6px; overflow: hidden; color: #fff; display: flex; flex-direction: column; opacity: 0; transform: translateY(20px); transition: opacity .4s ease, transform .4s ease, box-shadow .15s; }
-    .deal-card.visible { opacity: 1; transform: translateY(0); }
-    .deal-card:hover { box-shadow: 0 4px 20px rgba(255,94,26,.15); }
+
+    .deals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    article.deal-card { background: #1a1a1f; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; opacity: 0; transform: translateY(16px); transition: opacity .35s ease, transform .35s ease, box-shadow .15s; }
+    article.deal-card.visible { opacity: 1; transform: translateY(0); }
+    article.deal-card:hover { box-shadow: 0 4px 20px rgba(255,94,26,.15); }
     .deal-card-img-link { display: block; text-decoration: none; flex-shrink: 0; }
-    .deal-card-img-link img { width: 100%; height: 200px; object-fit: cover; background: #222; display: block; }
-    .deal-card-img-link .deal-img-placeholder { height: 200px; background: #222; display: block; }
-    .deal-card-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
+    .deal-card-img-link img { width: 100%; height: 180px; object-fit: cover; background: #222; display: block; }
+    .deal-img-placeholder { height: 180px; background: #222; display: block; }
+    .deal-card-body { padding: 12px; display: flex; flex-direction: column; flex: 1; }
     .deal-cat-badge { display: inline-block; background: #FF5E1A22; color: #FF5E1A; border: 1px solid #FF5E1A33; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-    .deal-card-title-link { text-decoration: none; color: #fff; }
-    .deal-card-title { font-size: 14px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .deal-card-prices { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .deal-price-now { font-family: 'Bebas Neue'; font-size: 24px; color: #FF5E1A; }
-    .deal-price-was { font-size: 13px; color: #555; text-decoration: line-through; }
-    .deal-off-badge { margin-left: auto; background: #FF5E1A; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; }
-    .deal-card-cta { display: block; margin-top: 12px; text-align: center; background: #FF5E1A; color: #fff; padding: 8px; border-radius: 3px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .deal-card-body h3 { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 10px; }
+    .deal-card-body h3 a { color: #fff; text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .deal-card-body h3 a:hover { color: #FF5E1A; }
+    .deal-desc { font-size: 12px; color: #777; line-height: 1.5; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .deal-card-prices { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+    .deal-price-now { font-family: 'Bebas Neue'; font-size: 22px; color: #FF5E1A; }
+    .deal-price-was { font-size: 12px; color: #555; }
+    .deal-off-badge { margin-left: auto; background: #FF5E1A; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+    .deal-store { font-size: 11px; color: #555; margin-bottom: 10px; margin-top: auto; padding-top: 8px; }
+    .deal-card-cta { display: block; text-align: center; background: #FF5E1A; color: #fff; padding: 9px; border-radius: 3px; font-size: 13px; font-weight: 700; text-decoration: none; }
     .deal-card-cta:hover { background: #e04d0f; }
     .deals-loading { color: #555; text-align: center; padding: 40px; grid-column: 1 / -1; }
 
-    .how-section { background: #0d0d10; padding: 64px 32px; }
+    .how-section { background: #0d0d10; padding: 56px 24px; }
     .how-inner { max-width: 800px; margin: 0 auto; text-align: center; }
-    .how-inner h2 { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 40px; }
-    .how-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-    @media (max-width: 600px) { .how-cols { grid-template-columns: 1fr; } }
+    .how-inner h2 { font-family: 'Bebas Neue'; font-size: 36px; margin-bottom: 36px; }
+    .how-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
     .how-col { text-align: center; }
-    .how-icon { font-size: 40px; margin-bottom: 14px; }
-    .how-col h3 { font-family: 'Bebas Neue'; font-size: 22px; margin-bottom: 8px; color: #FF5E1A; }
+    .how-icon { font-size: 36px; margin-bottom: 12px; }
+    .how-col h3 { font-family: 'Bebas Neue'; font-size: 20px; margin-bottom: 6px; color: #FF5E1A; }
     .how-col p { color: #aaa; font-size: 14px; }
 
-    .lead-section { background: #FF5E1A; padding: 64px 32px; text-align: center; }
-    .lead-section h2 { font-family: 'Bebas Neue'; font-size: 40px; color: #fff; margin-bottom: 8px; }
-    .lead-section p { color: #fff; opacity: .9; font-size: 16px; margin-bottom: 28px; }
+    .lead-section { background: #FF5E1A; padding: 56px 24px; text-align: center; }
+    .lead-section h2 { font-family: 'Bebas Neue'; font-size: 36px; color: #fff; margin-bottom: 8px; }
+    .lead-section p { color: #fff; opacity: .9; font-size: 16px; margin-bottom: 24px; }
     .lead-form { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
     .lead-form input { flex: 1; min-width: 200px; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.3); color: #fff; border-radius: 4px; padding: 12px 16px; font-size: 14px; font-family: 'DM Sans'; }
     .lead-form input::placeholder { color: rgba(255,255,255,.6); }
     .lead-form button { background: #111114; color: #FF5E1A; border: none; border-radius: 4px; padding: 12px 22px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'DM Sans'; }
     .lead-success { display: none; color: #fff; font-weight: 700; font-size: 16px; margin-top: 12px; }
 
-    .community-section { padding: 64px 32px; max-width: 800px; margin: 0 auto; }
-    .community-section h2 { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 28px; text-align: center; }
-    .community-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 560px) { .community-cards { grid-template-columns: 1fr; } }
-    .community-card { background: #1a1a1f; border-radius: 8px; padding: 28px; text-align: center; }
-    .community-card h3 { font-family: 'Bebas Neue'; font-size: 22px; margin-bottom: 8px; }
+    .community-section { padding: 56px 24px; max-width: 800px; margin: 0 auto; }
+    .community-section h2 { font-family: 'Bebas Neue'; font-size: 36px; margin-bottom: 24px; text-align: center; }
+    .community-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .community-card { background: #1a1a1f; border-radius: 8px; padding: 24px; text-align: center; }
+    .community-card h3 { font-family: 'Bebas Neue'; font-size: 20px; margin-bottom: 8px; }
     .community-card p { color: #aaa; font-size: 14px; margin-bottom: 16px; }
     .community-card a { display: inline-block; padding: 10px 22px; border-radius: 4px; font-weight: 700; font-size: 14px; text-decoration: none; }
     .btn-tg { background: #229ED9; color: #fff; }
     .btn-fb { background: #1877F2; color: #fff; }
 
-    .faq-section { padding: 64px 32px; max-width: 720px; margin: 0 auto; }
-    .faq-section h2 { font-family: 'Bebas Neue'; font-size: 40px; margin-bottom: 28px; }
+    .faq-section { padding: 56px 24px; max-width: 720px; margin: 0 auto; }
+    .faq-section h2 { font-family: 'Bebas Neue'; font-size: 36px; margin-bottom: 24px; }
     .faq-item { border-bottom: 1px solid #1a1a1f; }
-    .faq-q { padding: 16px 0; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
-    .faq-q::after { content: '+'; color: #FF5E1A; font-size: 22px; font-weight: 300; flex-shrink: 0; margin-left: 12px; }
+    .faq-q { padding: 15px 0; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+    .faq-q::after { content: '+'; color: #FF5E1A; font-size: 20px; font-weight: 300; flex-shrink: 0; margin-left: 12px; }
     .faq-q.open::after { content: '-'; }
-    .faq-a { display: none; padding: 0 0 16px; color: #aaa; font-size: 14px; line-height: 1.7; }
+    .faq-a { display: none; padding: 0 0 15px; color: #aaa; font-size: 14px; line-height: 1.7; }
 
-    footer { background: #0a0a0d; border-top: 1px solid #1a1a1f; padding: 40px 32px; text-align: center; color: #444; font-size: 13px; }
+    footer { background: #0a0a0d; border-top: 1px solid #1a1a1f; padding: 36px 24px 80px; text-align: center; color: #444; font-size: 13px; }
     footer .footer-links { margin-bottom: 12px; }
-    footer a { color: #666; text-decoration: none; margin: 0 12px; }
+    footer a { color: #666; text-decoration: none; margin: 0 10px; }
     footer a:hover { color: #FF5E1A; }
-    footer p { margin-top: 8px; }
+
+    /* Sticky social buttons */
+    .sticky-social { position: fixed; right: 14px; bottom: 90px; display: flex; flex-direction: column; gap: 8px; z-index: 90; }
+    .sticky-social a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,.4); transition: transform .15s; }
+    .sticky-social a:hover { transform: scale(1.1); }
+    .sticky-tg { background: #229ED9; }
+    .sticky-fb { background: #1877F2; }
+
+    /* Email modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #1a1a1f; border-radius: 8px; padding: 36px 28px; max-width: 420px; width: 100%; text-align: center; position: relative; }
+    .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: #555; font-size: 22px; cursor: pointer; line-height: 1; }
+    .modal-close:hover { color: #fff; }
+    .modal-box h2 { font-family: 'Bebas Neue'; font-size: 32px; color: #FF5E1A; margin-bottom: 8px; }
+    .modal-box p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+    .modal-form { display: flex; flex-direction: column; gap: 10px; }
+    .modal-form input { background: #111114; border: 1px solid #333; color: #fff; border-radius: 4px; padding: 12px 14px; font-size: 14px; font-family: 'DM Sans'; }
+    .modal-form input::placeholder { color: #555; }
+    .modal-form button { background: #FF5E1A; color: #fff; border: none; border-radius: 4px; padding: 13px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: 'DM Sans'; }
+    .modal-success { display: none; color: #4ade80; font-weight: 600; margin-top: 12px; }
+    .modal-skip { display: block; margin-top: 14px; font-size: 12px; color: #555; cursor: pointer; text-decoration: underline; }
+
+    /* Mobile sticky bottom nav */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0d; border-top: 1px solid #1a1a1f; z-index: 95; }
+    .bottom-nav ul { display: flex; list-style: none; }
+    .bottom-nav li { flex: 1; }
+    .bottom-nav a { display: flex; flex-direction: column; align-items: center; padding: 10px 4px 8px; color: #666; text-decoration: none; font-size: 10px; font-weight: 600; gap: 3px; }
+    .bottom-nav a:hover, .bottom-nav a.active { color: #FF5E1A; }
+    .bottom-nav .bn-icon { font-size: 18px; }
+
+    @media (max-width: 640px) {
+      header nav { padding: 12px 16px; gap: 12px; }
+      .nav-tg, .nav-fb { padding: 7px 12px; font-size: 12px; }
+      .hero { padding: 48px 16px 40px; }
+      .deals-section { padding: 40px 16px; }
+      .deals-grid { grid-template-columns: 1fr; }
+      .how-cols { grid-template-columns: 1fr; }
+      .community-cards { grid-template-columns: 1fr; }
+      .bottom-nav { display: block; }
+      .sticky-social { bottom: 70px; }
+      footer { padding-bottom: 90px; }
+    }
   </style>
 </head>
 <body>
 
 <div class="alert-bar">FREE DEAL ALERTS &mdash; No spam, unsubscribe anytime</div>
 
-<nav>
-  <a class="nav-brand" href="/">DEAL SNIPER</a>
-  <a href="/top-deals">Top Deals</a>
-  <a href="/about">About</a>
-  <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
-  <a href="https://www.facebook.com/groups/826906386379276" class="nav-fb" target="_blank" rel="noopener">Join Facebook</a>
-</nav>
+<header>
+  <nav>
+    <a class="nav-brand" href="/">BIDYARD DEALS</a>
+    <a href="/top-deals">Top Deals</a>
+    <a href="/about">About</a>
+    <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
+    <a href="https://www.facebook.com/groups/826906386379276" class="nav-fb" target="_blank" rel="noopener">Join Facebook</a>
+  </nav>
+</header>
 
-<section class="hero">
-  <h1>Amazon Deals.<br><span>First.</span></h1>
-  <p class="hero-sub">We hunt the deepest Amazon discounts and alert you instantly &mdash; 100% free.</p>
-  <form class="hero-form" id="heroForm">
-    <input type="text" name="first_name" placeholder="First name">
-    <input type="email" name="email" placeholder="your@email.com" required>
-    <button type="submit">Get Free Alerts</button>
-  </form>
-  <div class="hero-success" id="heroSuccess">You're in! Check your inbox to confirm.</div>
-  <div class="hero-social">
-    <a href="https://t.me/Coupons_Deals_Steals" class="social-btn social-btn-tg" target="_blank" rel="noopener">Telegram Channel</a>
-  </div>
-  <div class="social-proof">Deals posted daily &mdash; join free</div>
-</section>
+<main>
 
-<div class="section">
-  <div class="deals-controls">
-    <div class="section-title" style="margin-bottom:0">Latest Deals</div>
-    <div>
-      <label for="dealSort">Sort by:</label>
-      <select class="sort-select" id="dealSort">
-        <option value="newest">Newest First</option>
-        <option value="discount">Biggest Discount</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-        <option value="savings">Most Savings ($)</option>
-      </select>
+  <section class="hero">
+    <h1>Best Daily Deals<br>&amp; <span>Discounts</span></h1>
+    <p class="hero-intro">We scan Amazon 24/7 and surface the biggest price drops &mdash; electronics, kitchen, clothing, toys and more. Updated daily, always free.</p>
+    <form class="hero-form" id="heroForm">
+      <input type="text" name="first_name" placeholder="First name">
+      <input type="email" name="email" placeholder="your@email.com" required>
+      <button type="submit">Get Free Alerts</button>
+    </form>
+    <div class="hero-success" id="heroSuccess">You're in! Check your inbox to confirm.</div>
+    <div class="hero-social">
+      <a href="https://t.me/Coupons_Deals_Steals" class="social-btn social-btn-tg" target="_blank" rel="noopener">&#9992; Telegram Channel</a>
     </div>
-  </div>
-  <div class="deals-grid" id="dealsFeed">
-    <div class="deals-loading">Loading deals&hellip;</div>
-  </div>
-</div>
+    <div class="social-proof">Deals posted daily &mdash; join free</div>
+  </section>
 
-<div class="how-section">
-  <div class="how-inner">
-    <h2>How It Works</h2>
-    <div class="how-cols">
-      <div class="how-col">
-        <div class="how-icon">&#128269;</div>
-        <h3>We Hunt</h3>
-        <p>Our AI scans Amazon 24/7 for the biggest price drops across every category.</p>
-      </div>
-      <div class="how-col">
-        <div class="how-icon">&#128276;</div>
-        <h3>We Alert</h3>
-        <p>The moment we find a deal over 30% off, you get an instant notification.</p>
-      </div>
-      <div class="how-col">
-        <div class="how-icon">&#128176;</div>
-        <h3>You Save</h3>
-        <p>Click, shop, and save. No coupons to clip. Just deals delivered to you.</p>
+  <section class="deals-section" aria-labelledby="trending-title">
+    <div class="section-head">
+      <h2 class="section-title" id="trending-title">Trending Deals</h2>
+      <a href="/top-deals" class="section-link">View all &rarr;</a>
+    </div>
+    <div class="deals-grid" id="trendingFeed">
+      <div class="deals-loading">Loading&hellip;</div>
+    </div>
+  </section>
+
+  <section class="deals-section" aria-labelledby="latest-title">
+    <div class="section-head">
+      <h2 class="section-title" id="latest-title">Latest Deals</h2>
+      <div class="deals-controls">
+        <label for="dealSort">Sort:</label>
+        <select class="sort-select" id="dealSort">
+          <option value="newest">Newest</option>
+          <option value="discount">Biggest Discount</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="savings">Most Savings</option>
+        </select>
       </div>
     </div>
-  </div>
-</div>
-
-<div class="lead-section">
-  <h2>Free: Top 10 Deals This Week</h2>
-  <p>Get our curated PDF report with this week's best Amazon deals.</p>
-  <form class="lead-form" id="leadForm">
-    <input type="email" name="email" placeholder="your@email.com" required>
-    <button type="submit">Send Me the PDF</button>
-  </form>
-  <div class="lead-success" id="leadSuccess">Check your inbox for the download link!</div>
-</div>
-
-<div class="community-section">
-  <h2>Join the Community</h2>
-  <div class="community-cards">
-    <div class="community-card">
-      <h3>Telegram Channel</h3>
-      <p>Instant deal alerts the moment we find them. Fastest way to never miss a deal.</p>
-      <a href="https://t.me/Coupons_Deals_Steals" class="btn-tg" target="_blank" rel="noopener">Join Free</a>
+    <div class="deals-grid" id="latestFeed">
+      <div class="deals-loading">Loading&hellip;</div>
     </div>
-    <div class="community-card">
-      <h3>Facebook Group</h3>
-      <p>Share finds, ask questions, and connect with other deal hunters.</p>
-      <a href="https://www.facebook.com/groups/826906386379276" class="btn-fb" target="_blank" rel="noopener">Join Group</a>
+  </section>
+
+  <section class="deals-section" aria-labelledby="discount-title">
+    <div class="section-head">
+      <h2 class="section-title" id="discount-title">Highest Discounts</h2>
+      <a href="/top-deals" class="section-link">View all &rarr;</a>
+    </div>
+    <div class="deals-grid" id="discountFeed">
+      <div class="deals-loading">Loading&hellip;</div>
+    </div>
+  </section>
+
+  <div class="how-section">
+    <div class="how-inner">
+      <h2>How It Works</h2>
+      <div class="how-cols">
+        <div class="how-col">
+          <div class="how-icon">&#128269;</div>
+          <h3>We Hunt</h3>
+          <p>Our AI scans Amazon 24/7 for the biggest price drops across every category.</p>
+        </div>
+        <div class="how-col">
+          <div class="how-icon">&#128276;</div>
+          <h3>We Alert</h3>
+          <p>The moment we find a deal over 30% off, you get an instant notification.</p>
+        </div>
+        <div class="how-col">
+          <div class="how-icon">&#128176;</div>
+          <h3>You Save</h3>
+          <p>Click, shop, and save. No coupons to clip. Just deals delivered to you.</p>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="faq-section">
-  <h2>Frequently Asked Questions</h2>
-  <div class="faq-item">
-    <div class="faq-q">Is this really free?</div>
-    <div class="faq-a">Yes, 100% free. We earn a small commission from Amazon when you buy through our links (at no extra cost to you). That's how we keep the alerts free for everyone.</div>
+  <div class="lead-section">
+    <h2>Free: Top 10 Deals This Week</h2>
+    <p>Get our curated PDF report with this week's best Amazon deals.</p>
+    <form class="lead-form" id="leadForm">
+      <input type="email" name="email" placeholder="your@email.com" required>
+      <button type="submit">Send Me the PDF</button>
+    </form>
+    <div class="lead-success" id="leadSuccess">Check your inbox for the download link!</div>
   </div>
-  <div class="faq-item">
-    <div class="faq-q">How do I get deal alerts?</div>
-    <div class="faq-a">Enter your email above for daily deal digests. For instant alerts the moment we find a deal, join our free Telegram channel.</div>
-  </div>
-  <div class="faq-item">
-    <div class="faq-q">Are the links affiliate links?</div>
-    <div class="faq-a">Yes. We are an Amazon Associate and earn a commission on qualifying purchases. The price you pay is always the same &mdash; affiliate links never increase the cost.</div>
-  </div>
-  <div class="faq-item">
-    <div class="faq-q">How often are deals posted?</div>
-    <div class="faq-a">We monitor Amazon continuously and post multiple deals every day. Our AI scans hundreds of categories to find the best discounts as soon as they appear.</div>
-  </div>
-  <div class="faq-item">
-    <div class="faq-q">Can I unsubscribe easily?</div>
-    <div class="faq-a">Yes. Every email has a one-click unsubscribe link. You can also unsubscribe directly at any time.</div>
-  </div>
-  <div class="faq-item">
-    <div class="faq-q">What types of deals do you cover?</div>
-    <div class="faq-a">Electronics, kitchen appliances, clothing, toys, home goods, beauty, sports equipment, books &mdash; if Amazon discounts it by 30% or more, we find it and alert you.</div>
-  </div>
-</div>
+
+  <section class="community-section" aria-labelledby="community-title">
+    <h2 id="community-title">Join the Community</h2>
+    <div class="community-cards">
+      <div class="community-card">
+        <h3>Telegram Channel</h3>
+        <p>Instant deal alerts the moment we find them. Fastest way to never miss a deal.</p>
+        <a href="https://t.me/Coupons_Deals_Steals" class="btn-tg" target="_blank" rel="noopener">Join Free</a>
+      </div>
+      <div class="community-card">
+        <h3>Facebook Group</h3>
+        <p>Share finds, ask questions, and connect with other deal hunters.</p>
+        <a href="https://www.facebook.com/groups/826906386379276" class="btn-fb" target="_blank" rel="noopener">Join Group</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section" aria-labelledby="faq-title">
+    <h2 id="faq-title">Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q">Is this really free?</div>
+      <div class="faq-a">Yes, 100% free. We earn a small commission from Amazon when you buy through our links (at no extra cost to you). That's how we keep the alerts free for everyone.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How do I get deal alerts?</div>
+      <div class="faq-a">Enter your email above for daily deal digests. For instant alerts the moment we find a deal, join our free Telegram channel.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Are the links affiliate links?</div>
+      <div class="faq-a">Yes. We are an Amazon Associate and earn a commission on qualifying purchases. The price you pay is always the same &mdash; affiliate links never increase the cost.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How often are deals posted?</div>
+      <div class="faq-a">We monitor Amazon continuously and post multiple deals every day. Our AI scans hundreds of categories to find the best discounts as soon as they appear.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I unsubscribe easily?</div>
+      <div class="faq-a">Yes. Every email has a one-click unsubscribe link. You can also unsubscribe directly at any time.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What types of deals do you cover?</div>
+      <div class="faq-a">Electronics, kitchen appliances, clothing, toys, home goods, beauty, sports equipment, books &mdash; if Amazon discounts it by 30% or more, we find it and alert you.</div>
+    </div>
+  </section>
+
+</main>
 
 <footer>
   <div class="footer-links">
@@ -262,8 +334,40 @@
     <a href="/api/unsubscribe?email=">Unsubscribe</a>
   </div>
   <p>Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
-  <p style="margin-top:4px">&copy; 2025 Coupons, Deals &amp; Steals. Amazon Associates participant.</p>
+  <p style="margin-top:4px">&copy; 2025 BidYard Deals. Amazon Associates participant.</p>
 </footer>
+
+<!-- Sticky social buttons -->
+<div class="sticky-social" aria-label="Social channels">
+  <a class="sticky-tg" href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener" aria-label="Join Telegram">&#9992;</a>
+  <a class="sticky-fb" href="https://www.facebook.com/groups/826906386379276" target="_blank" rel="noopener" aria-label="Join Facebook">f</a>
+</div>
+
+<!-- Mobile bottom nav -->
+<nav class="bottom-nav" aria-label="Mobile navigation">
+  <ul>
+    <li><a href="/" class="active"><span class="bn-icon">&#127968;</span>Home</a></li>
+    <li><a href="/top-deals"><span class="bn-icon">&#128293;</span>Deals</a></li>
+    <li><a href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener"><span class="bn-icon">&#9992;</span>Alerts</a></li>
+    <li><a href="/about"><span class="bn-icon">&#8505;</span>About</a></li>
+  </ul>
+</nav>
+
+<!-- Email capture modal -->
+<div class="modal-overlay" id="emailModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <h2 id="modal-title">Don't Miss a Deal</h2>
+    <p>Get the best Amazon discounts delivered to your inbox. Free, no spam.</p>
+    <form class="modal-form" id="modalForm">
+      <input type="text" name="first_name" placeholder="First name">
+      <input type="email" name="email" placeholder="your@email.com" required>
+      <button type="submit">Get Free Alerts</button>
+    </form>
+    <div class="modal-success" id="modalSuccess">You're in! Check your inbox.</div>
+    <span class="modal-skip" id="modalSkip">No thanks, I don't want deals</span>
+  </div>
+</div>
 
 <script>
 function subscribe(email, firstName, source, successEl, formEl) {
@@ -289,6 +393,30 @@ document.getElementById('leadForm').addEventListener('submit', function(e) {
   subscribe(this.querySelector('[name=email]').value, '', 'lead_magnet', document.getElementById('leadSuccess'), this);
 });
 
+document.getElementById('modalForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  subscribe(this.querySelector('[name=email]').value, this.querySelector('[name=first_name]').value, 'modal', document.getElementById('modalSuccess'), this);
+});
+
+function closeModal() { document.getElementById('emailModal').classList.remove('open'); }
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalSkip').addEventListener('click', closeModal);
+document.getElementById('emailModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+var _modalShown = false;
+function showModal() {
+  if (_modalShown) return;
+  _modalShown = true;
+  sessionStorage.setItem('modal_shown', '1');
+  document.getElementById('emailModal').classList.add('open');
+}
+if (!sessionStorage.getItem('modal_shown')) {
+  setTimeout(showModal, 9000);
+  window.addEventListener('scroll', function() {
+    if ((window.scrollY / (document.body.scrollHeight - window.innerHeight || 1)) > 0.5) showModal();
+  }, {passive: true});
+}
+
 var _allDeals = [];
 
 function sortDeals(deals, mode) {
@@ -296,55 +424,67 @@ function sortDeals(deals, mode) {
   if (mode === 'discount') arr.sort(function(a,b){ return (b.discount_pct||0)-(a.discount_pct||0); });
   else if (mode === 'price_asc') arr.sort(function(a,b){ return (a.price||0)-(b.price||0); });
   else if (mode === 'price_desc') arr.sort(function(a,b){ return (b.price||0)-(a.price||0); });
-  else if (mode === 'savings') arr.sort(function(a,b){ var sa=(b.original_price||0)-(b.price||0), sb=(a.original_price||0)-(a.price||0); return sa-sb; });
-  // default: newest — keep original order (deals.json is already newest-first)
+  else if (mode === 'savings') arr.sort(function(a,b){ return ((b.original_price||0)-(b.price||0))-((a.original_price||0)-(a.price||0)); });
   return arr;
 }
 
 function buildCard(d) {
-  var dealPage = '/deals/'+(d.slug||'');
+  var dealPage = '/deals/' + (d.slug || '');
   var buyUrl = d.amazon_url || dealPage;
-  var title = (d.title||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  var alt = (d.title||'').replace(/"/g,'');
-  return '<div class="deal-card">' +
-    '<a class="deal-card-img-link" href="'+dealPage+'">' +
-      (d.image_url ? '<img src="'+d.image_url+'" alt="'+alt+'" loading="lazy">' : '<div class="deal-img-placeholder"></div>') +
+  var title = (d.title || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  var alt = (d.title || '').replace(/"/g, '&quot;');
+  var desc = d.description ? '<p class="deal-desc">' + d.description.slice(0,120).replace(/</g,'&lt;') + '</p>' : '';
+  return '<article class="deal-card">' +
+    '<a class="deal-card-img-link" href="' + dealPage + '">' +
+      (d.image_url ? '<img src="' + d.image_url + '" alt="' + alt + '" loading="lazy" width="220" height="180">' : '<div class="deal-img-placeholder"></div>') +
     '</a>' +
     '<div class="deal-card-body">' +
-      (d.category ? '<div class="deal-cat-badge">'+d.category+'</div>' : '') +
-      '<a class="deal-card-title-link" href="'+dealPage+'"><div class="deal-card-title">'+title.slice(0,80)+'</div></a>' +
+      (d.category ? '<span class="deal-cat-badge">' + d.category + '</span>' : '') +
+      '<h3><a href="' + dealPage + '">' + title.slice(0, 80) + '</a></h3>' +
+      desc +
       '<div class="deal-card-prices">' +
-        '<div class="deal-price-now">$'+(d.price ? parseFloat(d.price).toFixed(2) : '?')+'</div>' +
-        (d.original_price ? '<div class="deal-price-was">$'+parseFloat(d.original_price).toFixed(2)+'</div>' : '') +
-        (d.discount_pct ? '<div class="deal-off-badge">'+d.discount_pct+'% OFF</div>' : '') +
+        '<span class="deal-price-now">$' + (d.price ? parseFloat(d.price).toFixed(2) : '?') + '</span>' +
+        (d.original_price ? '<s class="deal-price-was">$' + parseFloat(d.original_price).toFixed(2) + '</s>' : '') +
+        (d.discount_pct ? '<span class="deal-off-badge">' + d.discount_pct + '% OFF</span>' : '') +
       '</div>' +
-      '<a class="deal-card-cta" href="'+buyUrl+'" target="_blank" rel="noopener nofollow sponsored">See Deal &rarr;</a>' +
-    '</div></div>';
+      '<span class="deal-store">Amazon</span>' +
+      '<a class="deal-card-cta" href="' + buyUrl + '" target="_blank" rel="noopener nofollow sponsored">See Deal &rarr;</a>' +
+    '</div></article>';
 }
 
-function renderDeals(deals) {
-  var grid = document.getElementById('dealsFeed');
-  var show = deals.slice(0,12);
-  if (!show.length) { grid.innerHTML = '<div class="deals-loading">No deals yet &mdash; check back soon!</div>'; return; }
-  grid.innerHTML = show.map(buildCard).join('');
-  var obs = new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:0.1});
-  grid.querySelectorAll('.deal-card').forEach(function(c){obs.observe(c);});
+function renderGrid(gridId, deals) {
+  var grid = document.getElementById(gridId);
+  if (!deals.length) { grid.innerHTML = '<div class="deals-loading">No deals yet &mdash; check back soon!</div>'; return; }
+  grid.innerHTML = deals.map(buildCard).join('');
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, {threshold: 0.08});
+  grid.querySelectorAll('.deal-card').forEach(function(c) { obs.observe(c); });
 }
 
 document.getElementById('dealSort').addEventListener('change', function() {
-  renderDeals(sortDeals(_allDeals, this.value));
+  renderGrid('latestFeed', sortDeals(_allDeals, this.value).slice(0, 8));
 });
 
-fetch('/deals.json').then(function(r){return r.json();}).then(function(deals){
+fetch('/deals.json').then(function(r) { return r.json(); }).then(function(deals) {
   _allDeals = deals;
-  renderDeals(sortDeals(deals, document.getElementById('dealSort').value));
-}).catch(function(){document.getElementById('dealsFeed').innerHTML='<div class="deals-loading">Could not load deals.</div>';});
+  var byDiscount = deals.slice().sort(function(a,b){ return (b.discount_pct||0)-(a.discount_pct||0); });
+  var trending = deals.filter(function(d){ return (d.discount_pct||0) >= 50; }).slice(0,8);
+  if (trending.length < 4) trending = deals.slice(0, 8);
+  renderGrid('trendingFeed', trending);
+  renderGrid('latestFeed', deals.slice(0, 8));
+  renderGrid('discountFeed', byDiscount.slice(0, 8));
+}).catch(function() {
+  ['trendingFeed','latestFeed','discountFeed'].forEach(function(id) {
+    document.getElementById(id).innerHTML = '<div class="deals-loading">Could not load deals.</div>';
+  });
+});
 
-document.querySelectorAll('.faq-q').forEach(function(q){
-  q.addEventListener('click',function(){
-    var a=this.nextElementSibling, open=this.classList.contains('open');
-    document.querySelectorAll('.faq-q').forEach(function(qq){qq.classList.remove('open');qq.nextElementSibling.style.display='none';});
-    if(!open){this.classList.add('open');a.style.display='block';}
+document.querySelectorAll('.faq-q').forEach(function(q) {
+  q.addEventListener('click', function() {
+    var a = this.nextElementSibling, open = this.classList.contains('open');
+    document.querySelectorAll('.faq-q').forEach(function(qq) { qq.classList.remove('open'); qq.nextElementSibling.style.display = 'none'; });
+    if (!open) { this.classList.add('open'); a.style.display = 'block'; }
   });
 });
 </script>
