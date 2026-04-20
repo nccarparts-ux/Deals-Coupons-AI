@@ -61,8 +61,43 @@
     .nav-fb:hover { background: #1464d2 !important; color: #fff !important; }
 
     /* ---- Hero ---- */
-    .hero { background: #ffffff; text-align: center; padding: 56px 24px 40px; border-bottom: 1px solid #e8e8e8; }
-    .hero-inner { max-width: 640px; margin: 0 auto; }
+    .hero { background: #ffffff; text-align: center; padding: 56px 24px 48px; border-bottom: 1px solid #e8e8e8; position: relative; overflow: hidden; }
+    .hero-inner { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* Gradient blob animation */
+    .hero-blob { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform; filter: blur(72px); }
+    .hero-blob-1 {
+      width: 560px; height: 420px;
+      background: radial-gradient(ellipse at center, rgba(192,57,43,0.16) 0%, transparent 68%);
+      top: -140px; right: -100px;
+      animation: hblob1 14s ease-in-out infinite alternate;
+    }
+    .hero-blob-2 {
+      width: 400px; height: 360px;
+      background: radial-gradient(ellipse at center, rgba(231,76,60,0.11) 0%, transparent 68%);
+      bottom: -100px; left: -80px;
+      animation: hblob2 18s ease-in-out infinite alternate;
+    }
+    .hero-blob-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(ellipse at center, rgba(255,150,100,0.13) 0%, transparent 68%);
+      top: 40%; left: 55%;
+      transform: translate(-50%, -50%);
+      animation: hblob3 11s ease-in-out infinite alternate;
+    }
+    @keyframes hblob1 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-50px, 40px) scale(1.12); }
+    }
+    @keyframes hblob2 {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, -30px) scale(1.08); }
+    }
+    @keyframes hblob3 {
+      from { transform: translate(-50%, -50%) scale(1); }
+      to   { transform: translate(-50%, -50%) translate(30px, -20px) scale(1.18); }
+    }
+    @media (prefers-reduced-motion: reduce) { .hero-blob { animation: none; } }
     .hero h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; color: #1a1a1a; line-height: 1.1; margin-bottom: 14px; }
     .hero h1 span { color: #c0392b; }
     .hero-intro { font-size: 16px; color: #666; max-width: 500px; margin: 0 auto 28px; }
@@ -303,6 +338,9 @@
 <main>
 
   <section class="hero">
+    <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
+    <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
+    <div class="hero-blob hero-blob-3" aria-hidden="true"></div>
     <div class="hero-inner">
       <h1>Best Daily Deals<br>&amp; <span>Discounts</span></h1>
       <p class="hero-intro">We scan Amazon 24/7 and surface the biggest price drops &mdash; electronics, kitchen, clothing, toys and more. Updated daily, always free.</p>
