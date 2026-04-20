@@ -213,6 +213,73 @@
     }
     footer a:hover { color: #c0392b; }
     footer p { color: #888; margin-top: 8px; font-size: 13px; }
+
+    /* ============================================================
+       MOBILE OPTIMIZATIONS (<=768px)
+       ============================================================ */
+    @media (max-width: 768px) {
+
+      /* Touch feedback */
+      a, button { -webkit-tap-highlight-color: rgba(192,57,43,0.1); }
+
+      /* NAV: hide social buttons, fix height */
+      nav {
+        padding: 0 16px;
+        height: 52px;
+        gap: 12px;
+        flex-wrap: nowrap;
+      }
+      .nav-brand { font-size: 20px; }
+      .nav-tg, .nav-fb { display: none; }
+
+      /* Inputs: prevent iOS auto-zoom */
+      input, select, textarea { font-size: 16px !important; }
+
+      /* Container */
+      .container { padding: 32px 16px 64px; }
+
+      /* White card */
+      .content-card { padding: 24px 20px; }
+
+      /* Signup box */
+      .signup-box { padding: 24px 16px; }
+
+      /* Signup form: stack vertically */
+      .signup-form {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+      }
+      .signup-form input {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+      }
+      .signup-form button {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      /* Community buttons: block, full-width, large tap targets */
+      .tg-btn, .fb-btn {
+        display: block;
+        text-align: center;
+        margin-left: 0;
+        margin-bottom: 10px;
+        min-height: 48px;
+        line-height: 48px;
+        padding: 0 20px;
+      }
+      .community-btns { margin-top: 16px; }
+
+      /* Footer */
+      footer {
+        padding: 36px 16px 100px;
+        font-size: 12px;
+      }
+      footer a { margin: 0 8px; }
+    }
   </style>
 </head>
 <body>

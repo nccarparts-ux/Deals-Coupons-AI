@@ -61,43 +61,81 @@
     .nav-fb:hover { background: #1464d2 !important; color: #fff !important; }
 
     /* ---- Hero ---- */
-    .hero { background: #ffffff; text-align: center; padding: 56px 24px 48px; border-bottom: 1px solid #e8e8e8; position: relative; overflow: hidden; }
+    .hero { background: linear-gradient(160deg, #fff6f5 0%, #ffffff 55%, #fff8f5 100%); text-align: center; padding: 56px 24px 48px; border-bottom: 1px solid #e8e8e8; position: relative; overflow: hidden; }
     .hero-inner { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
 
-    /* Gradient blob animation */
-    .hero-blob { position: absolute; border-radius: 50%; pointer-events: none; will-change: transform; filter: blur(40px); }
+    /* Hero background graphic */
+    .hero-blob { position: absolute; pointer-events: none; will-change: transform; }
+
+    /* Top-center spotlight — always visible, large warm glow */
     .hero-blob-1 {
-      width: 480px; height: 380px;
-      background: radial-gradient(ellipse at center, rgba(192,57,43,0.28) 0%, rgba(192,57,43,0.10) 40%, transparent 70%);
-      top: -80px; right: -60px;
-      animation: hblob1 14s ease-in-out infinite alternate;
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(192,57,43,0.18) 0%, rgba(192,57,43,0.08) 40%, transparent 68%);
+      top: -60px; left: 50%; transform: translateX(-50%);
+      filter: blur(20px);
+      animation: none;
     }
+
+    /* Bottom-left warm fill */
     .hero-blob-2 {
-      width: 380px; height: 340px;
-      background: radial-gradient(ellipse at center, rgba(231,76,60,0.22) 0%, rgba(231,76,60,0.08) 40%, transparent 70%);
-      bottom: -60px; left: -60px;
-      animation: hblob2 18s ease-in-out infinite alternate;
+      width: 420px; height: 340px;
+      background: radial-gradient(ellipse at 30% 70%, rgba(220,80,50,0.20) 0%, rgba(220,80,50,0.08) 45%, transparent 68%);
+      bottom: -40px; left: -40px;
+      filter: blur(18px);
+      animation: hblob2 16s ease-in-out infinite alternate;
     }
+
+    /* Top-right accent */
     .hero-blob-3 {
-      width: 260px; height: 260px;
-      background: radial-gradient(ellipse at center, rgba(255,120,80,0.20) 0%, rgba(255,120,80,0.06) 40%, transparent 70%);
-      top: 50%; left: 58%;
-      transform: translate(-50%, -50%);
-      animation: hblob3 11s ease-in-out infinite alternate;
+      width: 320px; height: 280px;
+      background: radial-gradient(ellipse at 70% 30%, rgba(192,57,43,0.15) 0%, rgba(255,140,100,0.08) 45%, transparent 68%);
+      top: 0; right: -20px;
+      filter: blur(16px);
+      animation: hblob3 12s ease-in-out infinite alternate;
     }
-    @keyframes hblob1 {
-      from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(-40px, 30px) scale(1.1); }
+
+    /* Floating deal badge decorations */
+    .hero-badge {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(192,57,43,0.18);
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      user-select: none;
+      font-family: 'Inter', sans-serif;
     }
+    .hero-badge-1 { top: 18%; left: 6%; animation: hfloat1 8s ease-in-out infinite alternate; font-size: 28px; color: rgba(192,57,43,0.10); }
+    .hero-badge-2 { top: 55%; right: 5%; animation: hfloat2 10s ease-in-out infinite alternate; font-size: 22px; color: rgba(192,57,43,0.08); }
+    .hero-badge-3 { bottom: 15%; left: 12%; animation: hfloat3 7s ease-in-out infinite alternate; font-size: 18px; color: rgba(192,57,43,0.09); }
+
     @keyframes hblob2 {
       from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(35px, -25px) scale(1.08); }
+      to   { transform: translate(30px, -20px) scale(1.06); }
     }
     @keyframes hblob3 {
-      from { transform: translate(-50%, -50%) scale(1); }
-      to   { transform: translate(calc(-50% + 28px), calc(-50% - 18px)) scale(1.15); }
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(-20px, 15px) scale(1.08); }
     }
-    @media (prefers-reduced-motion: reduce) { .hero-blob { animation: none; } }
+    @keyframes hfloat1 {
+      from { transform: translateY(0px); opacity: 1; }
+      to   { transform: translateY(-12px); opacity: 0.6; }
+    }
+    @keyframes hfloat2 {
+      from { transform: translateY(0px) rotate(0deg); opacity: 1; }
+      to   { transform: translateY(-8px) rotate(3deg); opacity: 0.5; }
+    }
+    @keyframes hfloat3 {
+      from { transform: translateY(0px); opacity: 1; }
+      to   { transform: translateY(-10px); opacity: 0.7; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-blob, .hero-badge { animation: none !important; }
+    }
+    @media (max-width: 640px) {
+      .hero-blob-1 { width: 100%; height: 300px; }
+      .hero-badge { display: none; }
+    }
     .hero h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; color: #1a1a1a; line-height: 1.1; margin-bottom: 14px; }
     .hero h1 span { color: #c0392b; }
     .hero-intro { font-size: 16px; color: #666; max-width: 500px; margin: 0 auto 28px; }
@@ -319,6 +357,139 @@
       .sticky-social { bottom: 70px; }
       footer { padding-bottom: 90px; }
     }
+
+    /* ============================================================
+       MOBILE OPTIMIZATIONS (<=768px)
+       ============================================================ */
+    @media (max-width: 768px) {
+
+      /* Touch feedback */
+      a, button { -webkit-tap-highlight-color: rgba(192,57,43,0.1); }
+
+      /* NAV: hide social buttons, fix height and brand size */
+      header nav {
+        padding: 0 16px;
+        height: 52px;
+        gap: 12px;
+        flex-wrap: nowrap;
+      }
+      .nav-brand { font-size: 20px; }
+      .nav-tg, .nav-fb { display: none; }
+
+      /* Inputs: prevent iOS auto-zoom */
+      input, select, textarea { font-size: 16px !important; }
+
+      /* HERO */
+      .hero { padding: 36px 16px 28px; }
+      .hero h1 { font-size: 30px; line-height: 1.15; }
+      .hero-intro { font-size: 14px; }
+      .hero-form {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+      }
+      .hero-form input {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+      }
+      .hero-form button {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      /* Section titles */
+      .section-title { font-size: 18px; }
+      .how-inner h2 { font-size: 18px; }
+      .community-section h2 { font-size: 18px; }
+      .faq-section h2 { font-size: 18px; }
+      .lead-section h2 { font-size: 24px; }
+
+      /* How it works: gap */
+      .how-cols { gap: 20px; }
+
+      /* Lead section: vertical form */
+      .lead-form {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+      }
+      .lead-form input {
+        width: 100%;
+        min-width: 0;
+        flex: none;
+      }
+      .lead-form button {
+        width: 100%;
+        min-height: 48px;
+      }
+
+      /* Community cards padding */
+      .community-card { padding: 20px; }
+
+      /* FAQ */
+      .faq-q { padding: 14px 16px; font-size: 14px; }
+      .faq-a { padding: 0 16px 14px; font-size: 14px; }
+
+      /* Footer */
+      footer {
+        padding-bottom: 100px;
+        font-size: 12px;
+      }
+      footer a { padding: 2px 8px; }
+
+      /* Bottom nav */
+      .bottom-nav {
+        min-height: 56px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom));
+      }
+      .bottom-nav a { font-size: 10px; }
+      .bottom-nav .bn-icon { font-size: 20px; }
+
+      /* Modal */
+      .modal-box {
+        padding: 24px 20px;
+        width: calc(100% - 24px);
+        margin: 0 auto;
+      }
+      .modal-box h2 { font-size: 24px; }
+      .modal-form button { min-height: 48px; }
+
+      /* Sticky social: smaller circles on mobile */
+      .sticky-social { right: 12px; }
+      .sticky-social a {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+
+      /* Deal card CTA: large tap target */
+      .deal-card-cta {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    /* ============================================================
+       SMALL MOBILE (<=480px) — single column, smaller images
+       ============================================================ */
+    @media (max-width: 480px) {
+      .deals-grid { grid-template-columns: 1fr; }
+      .deal-card-img-link img,
+      .deal-img-placeholder { height: 160px; }
+    }
+
+    /* ============================================================
+       TABLET (481px-1023px) — 2-col deals, 3-col how-it-works
+       ============================================================ */
+    @media (min-width: 481px) and (max-width: 1023px) {
+      .deals-grid { grid-template-columns: repeat(2, 1fr); }
+      .how-cols { grid-template-columns: repeat(3, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -341,6 +512,9 @@
     <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
     <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
     <div class="hero-blob hero-blob-3" aria-hidden="true"></div>
+    <div class="hero-badge hero-badge-1" aria-hidden="true">50% OFF</div>
+    <div class="hero-badge hero-badge-2" aria-hidden="true">DEAL</div>
+    <div class="hero-badge hero-badge-3" aria-hidden="true">SAVE</div>
     <div class="hero-inner">
       <h1>Best Daily Deals<br>&amp; <span>Discounts</span></h1>
       <p class="hero-intro">We scan Amazon 24/7 and surface the biggest price drops &mdash; electronics, kitchen, clothing, toys and more. Updated daily, always free.</p>

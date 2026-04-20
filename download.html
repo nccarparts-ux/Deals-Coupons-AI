@@ -211,6 +211,58 @@
     footer a { color: #aaa; text-decoration: none; margin: 0 10px; }
     footer a:hover { color: #c0392b; }
     footer p { color: #888; margin-top: 8px; font-size: 13px; }
+
+    /* ============================================================
+       MOBILE OPTIMIZATIONS (<=768px)
+       ============================================================ */
+    @media (max-width: 768px) {
+
+      /* Touch feedback */
+      a, button { -webkit-tap-highlight-color: rgba(192,57,43,0.1); }
+
+      /* NAV: hide social buttons, fix height */
+      nav {
+        padding: 0 16px;
+        height: 52px;
+        gap: 12px;
+        flex-wrap: nowrap;
+      }
+      .nav-brand { font-size: 20px; }
+      .nav-tg, .nav-fb { display: none; }
+
+      /* Inputs: prevent iOS auto-zoom */
+      input, select, textarea { font-size: 16px !important; }
+
+      /* Container */
+      .container { padding: 36px 16px 60px; }
+
+      /* Gate form card */
+      .gate-form { padding: 24px 16px; }
+
+      /* Buttons: min touch target */
+      .gate-form button { min-height: 48px; font-size: 15px; }
+      .download-btn {
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 28px;
+      }
+      .tg-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 20px;
+      }
+
+      /* Footer */
+      footer {
+        padding: 36px 16px 100px;
+        font-size: 12px;
+      }
+      footer a { margin: 0 8px; }
+    }
   </style>
 </head>
 <body>
