@@ -298,16 +298,16 @@ def publish_pending(rebuild_all: bool = False, dry_run: bool = False) -> int:
         return 0
 
     if not dry_run:
+        # Mark done first so sitemap rebuild includes these slugs
+        for deal in pending:
+            if deal["slug"] in published_slugs:
+                mark_done(deal["id"], "website_published")
+
         _rebuild_deals_json()
         _rebuild_sitemap()
         _ping_google()
         _git_push(published_slugs)
         _vercel_deploy()
-
-        # Mark done + log
-        for deal in pending:
-            if deal["slug"] in published_slugs:
-                mark_done(deal["id"], "website_published")
 
         supabase_insert("learning_log", {
             "metric": "agent_run_website",

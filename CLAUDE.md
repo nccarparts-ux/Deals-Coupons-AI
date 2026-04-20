@@ -23,14 +23,24 @@
 - Beat crashes if `celerybeat-schedule` file is stale — delete it before restarting beat
 - Amazon search results mix brand storefront cards (brand-only h2) with product cards — use `h2 a span` selector and skip titles < 15 chars or < 3 words
 - Webshare free datacenter proxies are all blocked by Amazon — not worth using; residential proxies (~$15/mo) work indefinitely
+- **Twitter API returns 402 on free tier** — all Twitter posting falls back to manual: saves `.txt` to `deal_sniper_ai/output/twitter/` and sends Telegram DM to owner
 
 ## Key Paths
-- `deal_sniper_ai/config/config.yaml` — retailer configs, selectors, affiliate tag `bidyarddeals-20`
+- `deal_sniper_ai/config/config.yaml` — retailer configs, selectors, affiliate tag `bidyarddeal09-20`
 - `deal_sniper_ai/crawler/ecommerce_crawler.py` — Playwright scraper (Chromium, anti-blocking)
 - `deal_sniper_ai/crawler/anti_blocking.py` — UserAgentInfo dataclass, 15 built-in agents (no DB)
 - `deal_sniper_ai/posting_engine/instant_poster.py` — immediate Telegram post on deal found
+- `deal_sniper_ai/posting_engine/platforms/tiktok_poster.py` — TikTok video pipeline + meme generation
+- `deal_sniper_ai/posting_engine/platforms/twitter_poster.py` — Twitter poster (manual fallback + engagement bot)
+- `deal_sniper_ai/posting_engine/platforms/remotion_renderer.py` — Remotion DealVideo + MemeVideo renderer
+- `deal_sniper_ai/posting_engine/cross_poster.py` — auto-tweets TikTok teaser after each render
 - `deal_sniper_ai/database/supabase_client.py` — uses service role key, bypasses RLS
 - `supabase/migrations/` — all 4 migrations already applied
+- `tiktok_remotion/src/DealVideo.tsx` — 20s deal video composition (600 frames)
+- `tiktok_remotion/src/MemeVideo.tsx` — 15s meme video composition (450 frames, 4 scenes)
+- `tiktok_remotion/src/Root.tsx` — registers both DealVideo and MemeVideo compositions
+- `deal_sniper_ai/output/tiktok/` — rendered TikTok .mp4 files
+- `deal_sniper_ai/output/twitter/` — manual Twitter post .txt files
 
 ## Pipeline (end-to-end working)
 ```
@@ -40,7 +50,29 @@ monitor_retailer (Celery, every 5 min)
   → _save_product()                            → products + price_history (Supabase)
   → _check_and_post_deal()
   → instant_poster.detect_and_post_deal()      → deal_candidates (Supabase)
-  → TelegramPoster                             → Telegram immediately
+  → TelegramPoster                             → Telegram channel immediately
+
+TikTok deal video (every 30 min, viral_potential >= 8):
+  notify_tiktok_ready → generate_and_notify()
+  → generate_script() [AI + COMMENT_BAIT + TELEGRAM_INVITE_LINK injected into CTA]
+  → _build_voiceover() [edge-tts]
+  → _fetch_pexels_clips() + _assemble_video() [MoviePy]
+  → manual_upload_helper() → Telegram DM to owner (file path + hashtags + pinned comment tip)
+  → cross_poster.post_tiktok_teaser_tweet() → Twitter teaser (or manual .txt fallback)
+
+Meme TikTok (2x/day: 10am + 6pm UTC):
+  render_meme_tiktok_task → generate_meme_and_notify()
+  → generate_meme_script() [6 formats: two_types, skill_issue, amazon_knows, horror_story, pov_found_group, ancestor_disappointment]
+  → same video pipeline → Telegram DM → cross-post tweet
+
+Twitter meme tweet (daily noon UTC):
+  post_meme_tweet_task → post_meme_tweet()
+  → MEME_TWEETS pool (15 tweets) + AI enhancement
+  → API attempt → if 402/403: save .txt + Telegram DM to owner
+
+Twitter engagement bot (every 90 min):
+  run_twitter_engagement_bot_task → twitter_engagement_bot()
+  → search #deals #coupons #frugal #AmazonDeals → reply to 10/run
 ```
 
 ## Services (all running)
@@ -53,7 +85,14 @@ monitor_retailer (Celery, every 5 min)
 ## Telegram
 - Bot: `@coupondealssteals_bot` (token in .env)
 - Channel: `-1003739890278` (supergroup, bot is admin)
+- Owner DM: chat ID `1711165098` — receives TikTok upload instructions + Twitter manual posts
+- Public invite link: `https://t.me/Coupons_Deals_Steals` (in `TELEGRAM_INVITE_LINK` env var)
 - Links use HTML format: `<a href="full_affiliate_url">amazon.com/dp/ASIN</a>` — hides tag
+
+## Affiliate
+- **Amazon tag: `bidyarddeal09-20`** (updated from bidyarddeals-20)
+- Tag set in: `.env` (AMAZON_ASSOCIATE_TAG), `config.yaml`, `instant_poster.py` default arg
+- Links format: `https://www.amazon.com/dp/ASIN?tag=bidyarddeal09-20`
 
 ## Crawler (current state)
 - Amazon only (Walmart/Target disabled) — extracts from search cards, no individual page visits
@@ -62,8 +101,31 @@ monitor_retailer (Celery, every 5 min)
 - 5 rotating post templates in `instant_poster.py`, all include `#ad`, times in EST/EDT
 - `"jewelry deals"` category returns brand storefronts — replaced with specific terms
 
+## Viral Funnel (TikTok + Twitter)
+- `COMMENT_BAIT` injected into every deal CTA; `CLIFFHANGER_ENDINGS` for viral_potential >= 9
+- `HASHTAG_SETS` — 14 format-specific hashtag strings sent in TikTok upload DM
+- Manual upload DM includes: file path, caption, hashtags, pinned comment suggestion
+- Twitter: all posting falls back to `.txt` file + Telegram DM (API is 402 on free tier)
+- Cross-poster: tweets TikTok teaser after every render (deal + meme)
+
+## Environment Variables (all in .env)
+```
+TELEGRAM_BOT_TOKEN         — bot token
+TELEGRAM_CHANNEL_ID        — public channel (-1003739890278)
+TELEGRAM_OWNER_ID          — owner DM chat ID (1711165098)
+TELEGRAM_INVITE_LINK       — https://t.me/Coupons_Deals_Steals
+AMAZON_ASSOCIATE_TAG       — bidyarddeal09-20
+SUPABASE_URL / SUPABASE_SERVICE_KEY
+ANTHROPIC_AUTH_TOKEN / ANTHROPIC_MODEL / ANTHROPIC_BASE_URL  (DeepSeek)
+PEXELS_API_KEY             — for TikTok stock footage
+TWITTER_API_KEY / TWITTER_API_SECRET
+TWITTER_ACCESS_TOKEN / TWITTER_ACCESS_SECRET
+TWITTER_CLIENT_ID / TWITTER_CLIENT_SECRET
+```
+
 ## Next
 - Amazon PAAPI integration (needs 3 qualifying Associate sales first)
 - Keepa API for price history (available immediately, ~$18/mo)
 - Residential proxies (Webshare ~$15/mo) when home IP gets soft-blocked
+- Twitter Basic plan ($100/mo) if Twitter becomes a priority channel
 - Scale Celery workers for higher throughput

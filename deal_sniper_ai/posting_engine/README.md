@@ -1,393 +1,156 @@
 # Posting Engine for Deal Sniper AI
 
-The Posting Engine handles posting deals to various social media and messaging platforms with advanced formatting, score filtering, and performance tracking.
+Handles posting deals and viral content to social platforms with score filtering,
+manual upload assistance, and a Telegram DM notification flow for manual steps.
 
-## Features
+## Platform Status
 
-- **Multi-platform Support**: Post to Telegram, Discord, Twitter/X, and TikTok
-- **Smart Formatting**: Platform-specific message formatting with templates
-- **Score Filtering**: Only post deals that meet platform-specific score thresholds
-- **Performance Tracking**: Track clicks, conversions, and revenue with `PostedDeal` model
-- **Error Handling**: Automatic retry queue for failed posts
-- **Async Operations**: All API calls are async/await with rate limiting
-- **Celery Integration**: Background task processing for scheduled posting
+| Platform | Status | Method |
+|----------|--------|--------|
+| **Telegram** | Live | Bot API — auto-posts deals to channel immediately |
+| **TikTok** | Live (manual upload) | Renders .mp4 → Telegram DM with file path + instructions |
+| **Twitter/X** | Manual fallback | API returns 402 (free tier) → saves .txt + Telegram DM |
+| **Discord** | Configured | Webhooks, rich embeds |
+| **Facebook** | Configured | Placeholder — requires Page token |
+| **Pinterest** | Configured | Placeholder — requires board token |
 
-## Platform Support
+## Key Files
 
-| Platform | Integration Type | Features |
-|----------|-----------------|----------|
-| **Telegram** | Bot API | HTML formatting, image support, channel posting |
-| **Discord** | Webhooks | Rich embeds, fields, thumbnails, formatting |
-| **Twitter/X** | API v2 (OAuth 2.0) | Hashtag generation, character limit handling |
-| **TikTok** | Manual Export | Export for manual posting with instructions |
-
-## Installation
-
-The posting engine is included in the main Deal Sniper AI installation. Ensure you have the required dependencies:
-
-```bash
-pip install httpx sqlalchemy celery python-telegram-bot
+```
+posting_engine/
+  instant_poster.py          — scores deals, posts to Telegram immediately on detection
+  platforms/
+    telegram_poster.py       — Telegram Bot API poster
+    tiktok_poster.py         — TikTok video pipeline + meme generation
+    twitter_poster.py        — Twitter poster (manual fallback + engagement bot)
+    remotion_renderer.py     — Remotion DealVideo + MemeVideo renderer
+    discord_poster.py        — Discord webhook poster
+    facebook_poster.py       — Facebook placeholder
+    pinterest_poster.py      — Pinterest placeholder
+  cross_poster.py            — tweets TikTok teaser after each render
+  tasks.py                   — all Celery task wrappers
+  formatter.py               — platform-specific message formatting
+  copy_generator.py          — AI-generated deal copy
 ```
 
-## Configuration
+## TikTok Flow
 
-Configure platforms in `config.yaml`:
+Every deal with `viral_potential >= 8` triggers a video pipeline:
 
-```yaml
-posting:
-  telegram:
-    enabled: true
-    bot_token: "YOUR_BOT_TOKEN"
-    channel_id: "@yourchannel"
-    post_format: |
-      🔥 <b>DEAL ALERT</b>
-      📦 {title}
-      💰 <b>Price:</b> ${current_price} (was ${original_price})
-      📉 <b>Discount:</b> {discount_percent}% off
-      🛒 <b>Link:</b> {affiliate_link}
-      📊 <b>Score:</b> {score}/100
-      ⏰ <b>Detected:</b> {detection_time}
-    min_score: 80
+1. `generate_script()` — AI voiceover script (DeepSeek), with `COMMENT_BAIT` and
+   `TELEGRAM_INVITE_LINK` injected into the CTA. `CLIFFHANGER_ENDINGS` injected for
+   `viral_potential >= 9`.
+2. `_build_voiceover()` — edge-tts (en-US-ChristopherNeural, +20% rate)
+3. `_fetch_pexels_clips()` — 3 stock clips from Pexels
+4. `_assemble_video()` — MoviePy: clips + captions + product image overlay
+5. `manual_upload_helper()` — Telegram DM to owner (`TELEGRAM_OWNER_ID`) with:
+   - File path of the .mp4
+   - Caption to paste
+   - `HASHTAG_SETS` for the specific video format (14 sets defined)
+   - Suggested pinned comment + "Pin this first for algorithm boost"
+   - Trending sound tip
+6. `cross_poster.post_tiktok_teaser_tweet()` — tweets a teaser (or saves .txt fallback)
 
-  discord:
-    enabled: true
-    webhook_url: "https://discord.com/api/webhooks/..."
-    post_format: "embed"  # or "plain"
-    min_score: 75
+**Meme TikToks** (no deal data needed) use `generate_meme_and_notify()`:
+- 6 formats: `two_types`, `skill_issue`, `amazon_knows`, `horror_story`,
+  `pov_found_group`, `ancestor_disappointment`
+- Same pipeline as deal videos; Remotion `MemeVideo` composition (15s / 450 frames)
+  available via `render_meme_video()` in `remotion_renderer.py`
 
-  twitter:
-    enabled: false  # Requires OAuth 2.0 setup
-    api_key: ""
-    api_secret: ""
-    access_token: ""
-    access_secret: ""
-    min_score: 85
+Output directory: `deal_sniper_ai/output/tiktok/`
 
-  tiktok:
-    enabled: true
-    min_score: 70
-```
+## Twitter Flow
 
-### Environment Variables
+All tweet types attempt the API first, then fall back automatically if it fails (402/403):
 
-Override configuration with environment variables:
+**API available:** posts directly via OAuth 1.0a to `POST /2/tweets`
+
+**API unavailable (current state — free tier 402):**
+- Saves a `.txt` file to `deal_sniper_ai/output/twitter/`
+- Sends Telegram DM to owner with the tweet text ready to copy-paste and 5-step upload instructions
+
+Tweet types:
+- **Meme tweets** — `MEME_TWEETS` pool (15 tweets), AI-enhanced via DeepSeek
+- **Viral format tweets** — `TWITTER_VIRAL_FORMATS` (poll, shock stat, thread teaser, engagement hook)
+- **Deal tweets** — single tweet with hashtags + `TELEGRAM_INVITE_LINK`
+- **Viral threads** — 3-tweet thread for `viral_potential >= 9`
+- **Engagement bot** — replies to `#deals #coupons #frugal #AmazonDeals` (10 replies/run)
+
+## Celery Beat Schedule
+
+| Task | Schedule | What it does |
+|------|----------|--------------|
+| `notify-tiktok-every-30min` | Every 30 min | Deal TikTok for viral_potential >= 8 |
+| `render-meme-tiktok-am` | 10:00 UTC | Meme TikTok video |
+| `render-meme-tiktok-pm` | 18:00 UTC | Meme TikTok video |
+| `post-meme-tweet` | 12:00 UTC | Daily meme tweet (or manual .txt) |
+| `run-twitter-engagement-bot` | Every 90 min | Reply to deal hashtag tweets |
+| `post-twitter-8am/12pm/5pm/9pm` | 4x daily | Deal tweet (or manual .txt) |
+| `daily-deal-planner` | 06:00 UTC | Queues top deals across platforms |
+
+## Environment Variables
 
 ```bash
 # Telegram
-export DS_POSTING_TELEGRAM_BOT_TOKEN="your_token"
-export DS_POSTING_TELEGRAM_CHANNEL_ID="@channel"
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_CHANNEL_ID=-1003739890278
+TELEGRAM_OWNER_ID=1711165098          # receives TikTok + Twitter DM notifications
+TELEGRAM_INVITE_LINK=https://t.me/Coupons_Deals_Steals  # injected into every CTA
 
-# Discord
-export DS_POSTING_DISCORD_WEBHOOK_URL="your_webhook"
+# Affiliate
+AMAZON_ASSOCIATE_TAG=bidyarddeal09-20
 
-# Twitter
-export DS_POSTING_TWITTER_API_KEY="your_key"
-export DS_POSTING_TWITTER_API_SECRET="your_secret"
+# TikTok stock footage
+PEXELS_API_KEY=...
+
+# Twitter (OAuth 1.0a — currently 402 on free tier)
+TWITTER_API_KEY=...
+TWITTER_API_SECRET=...
+TWITTER_ACCESS_TOKEN=...
+TWITTER_ACCESS_SECRET=...
+TWITTER_CLIENT_ID=...
+TWITTER_CLIENT_SECRET=...
+
+# AI (DeepSeek via Anthropic-compatible API)
+ANTHROPIC_AUTH_TOKEN=...
+ANTHROPIC_MODEL=deepseek-chat
+ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
 ```
 
-## Usage
+## Affiliate Tag
 
-### Basic Posting
+Current tag: **`bidyarddeal09-20`**
 
-```python
-from deal_sniper_ai.posting_engine.poster import PostingEngine
-from uuid import UUID
-
-# Initialize engine
-engine = PostingEngine()
-
-# Post a deal to all enabled platforms
-deal_id = UUID("your-deal-candidate-id")
-result = await engine.post_deal(deal_id)
-
-# Post to specific platforms
-result = await engine.post_deal(deal_id, platforms=["telegram", "discord"])
-
-# Check platform status
-status = await engine.get_platform_status("telegram")
-print(f"Telegram enabled: {status['enabled']}, config valid: {status['config_valid']}")
-
-# Close engine
-await engine.close()
-```
-
-### Convenience Functions
-
-```python
-from deal_sniper_ai.posting_engine.poster import post_deal_to_platforms, get_platform_status
-
-# Simple posting
-result = await post_deal_to_platforms(deal_id)
-
-# Check status
-status = await get_platform_status("discord")
-```
-
-### Message Formatting
-
-```python
-from deal_sniper_ai.posting_engine.formatter import PlatformFormatter
-
-formatter = PlatformFormatter()
-
-# Get deal data
-deal_data = {
-    'title': 'Wireless Headphones',
-    'current_price': 129.99,
-    'original_price': 199.99,
-    'discount_percent': 35.0,
-    'affiliate_link': 'https://example.com/link',
-    'score': 87.3,
-    'retailer': 'amazon',
-    'detection_time': '2024-01-15 14:30 UTC'
-}
-
-# Format for different platforms
-telegram_msg = formatter.format_message(deal_data, 'telegram')
-discord_msg = formatter.format_message(deal_data, 'discord')
-twitter_msg = formatter.format_message(deal_data, 'twitter')
-```
-
-### Platform-Specific Modules
-
-```python
-from deal_sniper_ai.posting_engine.platforms import (
-    TelegramPoster, DiscordPoster, TwitterPoster, TikTokPoster
-)
-
-# Create individual posters
-telegram = TelegramPoster(config)
-discord = DiscordPoster(config)
-
-# Test connections
-if await telegram.test_connection():
-    print("Telegram connection successful")
-
-if await discord.test_webhook():
-    print("Discord webhook valid")
-
-# Post directly
-result = await telegram.post(deal_data, formatted_message)
-```
-
-## Celery Tasks
-
-The posting engine includes Celery tasks for background processing:
-
-```python
-from deal_sniper_ai.posting_engine.tasks import (
-    post_deal_task,
-    post_approved_deals_task,
-    retry_failed_posts_task,
-    test_platform_connections_task
-)
-
-# Post a single deal (async)
-post_deal_task.delay(str(deal_id), ["telegram", "discord"])
-
-# Post all approved deals
-post_approved_deals_task.delay(limit=10)
-
-# Retry failed posts
-retry_failed_posts_task.delay()
-
-# Test platform connections
-test_platform_connections_task.delay()
-```
-
-### Scheduled Tasks
-
-Add to Celery beat schedule in `config.yaml`:
-
-```yaml
-celery:
-  beat_schedule:
-    post_approved_deals:
-      task: "deal_sniper_ai.posting_engine.tasks.post_approved_deals_task"
-      schedule: 300.0  # Every 5 minutes
-      args: [10]  # Limit to 10 deals
-
-    retry_failed_posts:
-      task: "deal_sniper_ai.posting_engine.tasks.retry_failed_posts_task"
-      schedule: 600.0  # Every 10 minutes
-
-    test_platform_connections:
-      task: "deal_sniper_ai.posting_engine.tasks.test_platform_connections_task"
-      schedule: 3600.0  # Every hour
-
-    cleanup_old_exports:
-      task: "deal_sniper_ai.posting_engine.tasks.cleanup_old_exports_task"
-      schedule: 86400.0  # Daily
-      args: [30]  # Cleanup files older than 30 days
-```
-
-## Database Integration
-
-### PostedDeal Model
-
-The engine automatically creates `PostedDeal` records when posting succeeds:
-
-```python
-from deal_sniper_ai.database.models import PostedDeal
-from sqlalchemy import select
-
-async with AsyncSessionLocal() as session:
-    # Get posted deals
-    query = select(PostedDeal).order_by(PostedDeal.posted_at.desc())
-    result = await session.execute(query)
-    posted_deals = result.scalars().all()
-
-    for deal in posted_deals:
-        print(f"Deal {deal.deal_candidate_id} posted to {deal.posted_to}")
-        print(f"Clicks: {deal.clicks}, Conversions: {deal.conversions}")
-        print(f"Revenue: ${deal.estimated_revenue}")
-```
-
-### Performance Tracking
-
-Track clicks and conversions:
-
-```python
-from deal_sniper_ai.affiliate_engine.converter import AffiliateConverter
-
-converter = AffiliateConverter()
-
-# Track a click
-await converter.track_click(affiliate_link_id)
-
-# Track a conversion with revenue
-await converter.track_conversion(affiliate_link_id, Decimal("29.99"))
-```
-
-## Template Variables
-
-Available variables for message templates:
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `{title}` | Product title | "Wireless Bluetooth Headphones" |
-| `{current_price}` | Current price | "129.99" |
-| `{original_price}` | Original price | "199.99" |
-| `{discount_percent}` | Discount percentage | "35.0" |
-| `{affiliate_link}` | Affiliate link | "https://amazon.com/..." |
-| `{score}` | Deal score (0-100) | "87" |
-| `{retailer}` | Retailer name | "Amazon" |
-| `{detection_time}` | Detection timestamp | "2024-01-15 14:30 UTC" |
-| `{hashtags}` | Generated hashtags | "#DealAlert #AmazonDeals" |
-| `{quality}` | Quality indicator emoji | "🔥" |
-
-## Error Handling
-
-The engine includes comprehensive error handling:
-
-```python
-try:
-    result = await engine.post_deal(deal_id)
-
-    if result['failed_platforms']:
-        print(f"Failed platforms: {result['failed_platforms']}")
-
-        # Retry failed posts
-        retry_result = await engine.retry_failed_posts()
-        print(f"Retried: {retry_result['retried']}, Successful: {retry_result['successful']}")
-
-except PlatformDisabledError as e:
-    print(f"Platform disabled: {e}")
-except InsufficientScoreError as e:
-    print(f"Deal score too low: {e}")
-except PostingError as e:
-    print(f"Posting error: {e}")
-```
+Set in: `.env` → `AMAZON_ASSOCIATE_TAG`, `config.yaml`, and `instant_poster.py` default arg.
+All new links generated by the crawler and copy generator use this tag automatically.
 
 ## Testing
 
-Run the built-in tests:
-
 ```bash
-# Test the posting engine
-python -m deal_sniper_ai.posting_engine.poster
+# Test meme TikTok + Twitter teaser + Telegram DM
+venv/Scripts/python scripts/test_meme_tiktok.py
 
-# Test formatter
-python -m deal_sniper_ai.posting_engine.formatter
+# Test deal TikTok video generation
+venv/Scripts/python scripts/test_comedy_tiktok.py
 
-# Test platform connections
-python -c "
-import asyncio
-from deal_sniper_ai.posting_engine.poster import test_all_platforms
-results = asyncio.run(test_all_platforms())
-print(results)
-"
+# Test live Telegram post with a sample deal
+venv/Scripts/python scripts/test_live_post.py
 ```
-
-## Platform-Specific Notes
-
-### Telegram
-- Requires bot token from [@BotFather](https://t.me/BotFather)
-- Bot must be added to channel as administrator
-- Supports HTML formatting and images
-
-### Discord
-- Create webhook in Discord channel settings
-- Supports rich embeds with colors and fields
-- Webhook URL should be kept secret
-
-### Twitter/X
-- Requires Twitter Developer account
-- API v2 with OAuth 2.0 authentication
-- Character limit: 280 characters
-
-### TikTok
-- No public API for automated posting
-- Export system creates files for manual posting
-- Includes detailed posting instructions
 
 ## Troubleshooting
 
-### Common Issues
+**Twitter 402 Payment Required** — expected on free developer tier. Posts save to
+`deal_sniper_ai/output/twitter/` and a Telegram DM is sent. Upgrade to Twitter Basic
+($100/mo) to enable direct posting.
 
-1. **Telegram: "Bot token invalid"**
-   - Verify bot token format: `1234567890:ABCdefGHIjklMNOpqrsTUVwxyz`
-   - Ensure bot is active and not banned
+**TikTok video missing captions** — no system font found. Ensure Arial/Calibri is
+installed (`C:/Windows/Fonts/arialbd.ttf`).
 
-2. **Discord: "Invalid webhook"**
-   - Check webhook URL format
-   - Ensure webhook is not deleted or expired
-   - Bot may need proper permissions in channel
+**Remotion render fails** — check Node.js is installed (`node --version >= 18`).
+Run `npm install` in `tiktok_remotion/` manually if deps are missing.
 
-3. **Twitter: Authentication failed**
-   - Verify API keys and tokens
-   - Ensure OAuth 2.0 is properly configured
-   - Check rate limits and API permissions
+**Pexels clips empty** — verify `PEXELS_API_KEY` in `.env`. Check the query term
+isn't too specific.
 
-4. **Database: No PostedDeal record**
-   - Check if deal candidate exists and is approved
-   - Verify database connection
-   - Check for transaction rollbacks
-
-### Logging
-
-Enable debug logging for troubleshooting:
-
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-
-Or in configuration:
-
-```yaml
-platform:
-  log_level: "DEBUG"
-```
-
-## Contributing
-
-1. Follow the existing code structure
-2. Add type hints for all functions
-3. Include docstrings with examples
-4. Update documentation
-5. Test with multiple platforms
-
-## License
-
-Part of the Deal Sniper AI Platform. See main project license.
+**Beat schedule not picking up new tasks** — delete the stale `celerybeat-schedule`
+file and restart beat.

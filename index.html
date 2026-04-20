@@ -736,7 +736,7 @@ document.getElementById('modalSkip').addEventListener('click', closeModal);
 document.getElementById('emailModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
 var _modalShown = false;
-var MODAL_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+var MODAL_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 function shouldShowModal() {
   if (localStorage.getItem('bd_subscribed')) return false;       // already subscribed — never show

@@ -36,14 +36,78 @@ logger = logging.getLogger(__name__)
 
 OUTPUT_DIR = "deal_sniper_ai/output/tiktok"
 
-# Script section timing in seconds
+# Script section timing — 20 seconds total for music compatibility
+# TikTok trending music loops at 15-30s; staying under 22s lets the beat breathe
 SECTION_TIMES = {
-    "hook": 0,
-    "problem": 3,
-    "reveal": 8,
-    "proof": 20,
-    "cta": 35,
+    "hook":    0,   # 0-2s   ultra-short pattern interrupt
+    "problem": 2,   # 2-6s   the deal / savings hook
+    "reveal":  6,   # 6-12s  details + proof
+    "proof":   12,  # 12-16s urgency / social proof
+    "cta":     16,  # 16-20s Telegram/follow CTA
 }
+
+# Proven viral TikTok deal-content formats — rotated randomly per video
+# These feel organic, not ad-like
+VIRAL_FORMATS = [
+    {
+        "name": "pov_savings",
+        "hook_template":    "POV: You just saved {savings} without even trying.",
+        "theme":            "lifestyle savings",
+        "pexels_query":     "person phone shopping happy",
+    },
+    {
+        "name": "stop_paying",
+        "hook_template":    "Stop paying full price. Seriously.",
+        "theme":            "money saving tips",
+        "pexels_query":     "saving money wallet cash",
+    },
+    {
+        "name": "secret_deal",
+        "hook_template":    "Amazon doesn't want you to see this deal.",
+        "theme":            "exclusive deal reveal",
+        "pexels_query":     "online shopping laptop excited",
+    },
+    {
+        "name": "countdown",
+        "hook_template":    "3 deals ending TODAY you need to grab right now.",
+        "theme":            "deals countdown",
+        "pexels_query":     "shopping online sale discount",
+    },
+    {
+        "name": "frugal_hack",
+        "hook_template":    "Things frugal people do that broke people don't.",
+        "theme":            "money saving lifestyle",
+        "pexels_query":     "woman smiling phone happy",
+    },
+    {
+        "name": "cant_believe",
+        "hook_template":    "I literally cannot believe this price right now.",
+        "theme":            "deal shock reaction",
+        "pexels_query":     "surprised woman phone deal",
+    },
+    {
+        "name": "before_you_buy",
+        "hook_template":    "Wait — before you buy anything online, watch this.",
+        "theme":            "smart shopping tips",
+        "pexels_query":     "smart shopping online coupon",
+    },
+    {
+        "name": "this_week",
+        "hook_template":    "Best deals this week that are actually worth it.",
+        "theme":            "weekly deals roundup",
+        "pexels_query":     "shopping bags sale fashion",
+    },
+]
+
+# Trending sound categories to suggest in the upload notification
+TRENDING_SOUND_TIPS = [
+    "Search 'cash register' sounds — great for deal reveals",
+    "Use a trending upbeat pop track (check TikTok Discover → Trending sounds)",
+    "Lo-fi hip hop works well for money-saving lifestyle content",
+    "Use a fast-paced EDM drop that hits at the reveal moment",
+    "Search 'viral remix' in TikTok sounds — any trending track with energy",
+    "Use a trending audio clip from a creator with 1M+ likes this week",
+]
 
 # Pexels video search endpoint
 PEXELS_VIDEO_SEARCH_URL = "https://api.pexels.com/videos/search"
@@ -101,6 +165,113 @@ PRODUCT_TO_PEXELS: Dict[str, str] = {
     "pet": "dog cat pet home",
     "book": "reading books study",
 }
+
+# ---------------------------------------------------------------------------
+# Viral engagement — comment bait, series hooks, cliffhangers
+# ---------------------------------------------------------------------------
+
+COMMENT_BAIT = [
+    "Drop a \U0001f525 if you want the direct link",
+    "Comment DEAL and I'll DM you the group",
+    "Save this before the price goes back up \U0001f446",
+    "Tag someone paying full price right now",
+    "Reply FREE for the full daily list",
+]
+
+SERIES_HOOKS = [
+    "Part {n}: deals Amazon doesn't want you finding",
+    "Day {n} of never paying full price",
+    "Deal #{n} this week that felt illegal",
+]
+
+CLIFFHANGER_ENDINGS = [
+    "...and there are 9 more just like it in the group",
+    "...Part 2 drops tomorrow. Follow so you don't miss it.",
+    "...the craziest one I found today is in the group. Link in bio.",
+]
+
+# Hashtag sets per video format — paste into TikTok after uploading
+HASHTAG_SETS: Dict[str, str] = {
+    "pov_savings":    "#DealsAndSteals #SaveMoney #MoneyHacks #DealAlert #FrugalLiving #TikTokDeals #AmazonDeals #CouponQueen #Savings #FYP",
+    "stop_paying":    "#BudgetHacks #MoneyTips #SaveMoney #NeverPayFull #CouponCode #Deals #FrugalLife #SmartShopping #Cashback #FYP",
+    "secret_deal":    "#SecretDeal #HiddenDeal #DealHack #PriceGlitch #AmazonHack #DealAlert #Savings #FYP #TikTokMadeMeBuyIt #ForYou",
+    "countdown":      "#DealAlert #TodayOnly #LimitedTime #SaleAlert #FlashSale #Deals #Savings #FYP #Amazon #GrabItNow",
+    "frugal_hack":    "#FrugalLiving #MoneyHacks #CouponLife #BudgetQueen #SavingMoney #FinanceTok #MoneyTips #Deals #FYP #Smart",
+    "cant_believe":   "#UnbelievableDeal #PriceDrop #WontLast #DealShock #AmazonFinds #DealsAndSteals #Savings #FYP #Viral #ShoppingHack",
+    "before_you_buy": "#ShoppingTips #MoneyHacks #SmartShopping #BeforeYouBuy #SaveMoney #ConsumerTips #Deals #FYP #Hack #DealAlert",
+    "this_week":      "#WeeklyDeals #BestDeals #TopDeals #DealRoundup #Savings #FrugalLiving #AmazonDeals #FYP #DealAlert #Sale",
+    # Meme formats
+    "two_types":             "#TwoTypes #FinanceTok #MoneyMeme #CouponMeme #DealMeme #BrokeOrBuilt #SmartMoney #FYP #Viral #Relatable",
+    "skill_issue":           "#SkillIssue #FinanceTok #MoneyMeme #PaidFullPrice #CouponLife #FYP #Viral #FunnyMoney #Relatable #Deals",
+    "amazon_knows":          "#AmazonHack #PriceDrop #DealGlitch #CouponCode #FYP #Viral #FinanceTok #MoneyMeme #SmartShopping #Deals",
+    "horror_story":          "#HorrorStory #FullPrice #DealMiss #FOMO #MoneyMistake #FYP #Viral #FinanceTok #SaveMoney #CouponLife",
+    "pov_found_group":       "#POV #TelegramDeals #FreeDeals #NeverPayFull #DealGroup #FYP #Viral #MoneyHacks #Deals #CouponLife",
+    "ancestor_disappointment": "#AncestorDisappointed #FullPrice #MoneyMeme #FinanceTok #CouponLife #FYP #Viral #Funny #SaveMoney #Deals",
+}
+
+# Meme content formats — rotated for meme TikTok + Twitter posts
+MEME_FORMATS = [
+    {
+        "name": "two_types",
+        "meme_style": "dark",
+        "pexels_query": "person shopping comparison contrast lifestyle",
+        "setup":    "there are two types of people in this economy",
+        "type_a":   "Type A: pays $400 for headphones at checkout",
+        "type_b":   "Type B: joins a free Telegram group, gets them for $58",
+        "punchline": "both exist. only one is built different.",
+        "cta":      "which one are you. link in bio.",
+    },
+    {
+        "name": "skill_issue",
+        "meme_style": "bright",
+        "pexels_query": "person frustrated shocked phone online",
+        "setup":    "paying full price in 2025",
+        "reaction": "bro that's a skill issue",
+        "detail":   "there's literally a free group that sends you deals every morning",
+        "cta":      "no subscription. no catch. just deals. link in bio.",
+    },
+    {
+        "name": "amazon_knows",
+        "meme_style": "dark",
+        "pexels_query": "person surprised laptop shopping excited",
+        "setup":    "Amazon when they see me about to pay full price",
+        "reaction": "\U0001f923 \U0001f4b0 \U0001f37e",
+        "detail":   "me after someone showed me the coupon glitch",
+        "punchline": "Amazon: \U0001f628",
+        "cta":      "we find these every day. free group. link in bio.",
+    },
+    {
+        "name": "horror_story",
+        "meme_style": "horror",
+        "pexels_query": "person shocked phone screen horror",
+        "setup":    "a horror story in 3 parts",
+        "part1":    "Part 1: You buy something at full price.",
+        "part2":    "Part 2: Same item. 60% off. Two days later.",
+        "part3":    "Part 3: You didn't know about our free deal group.",
+        "cta":      "don't let this happen to you. link in bio.",
+    },
+    {
+        "name": "pov_found_group",
+        "meme_style": "dark",
+        "pexels_query": "friends phone texting happy excited",
+        "setup":    "POV: your friend adds you to a free Telegram deal group",
+        "beat1":    "Day 1: cute, free coffee",
+        "beat2":    "Day 7: free headphones",
+        "beat3":    "Day 30: you haven't paid full price for anything",
+        "cta":      "link in bio. it's free. obviously.",
+    },
+    {
+        "name": "ancestor_disappointment",
+        "meme_style": "bright",
+        "pexels_query": "person embarrassed regret shopping mistake",
+        "setup":    "my ancestors watching me pay $14 for a candle",
+        "reaction": "\U0001f624\U0001f624\U0001f624",
+        "detail":   "bro it was $3 with coupon stacking",
+        "punchline": "they did not survive for this",
+        "cta":      "join the group. honor your lineage. link in bio.",
+    },
+]
+
 
 # ---------------------------------------------------------------------------
 # Exceptions
@@ -468,77 +639,71 @@ def _assemble_video(
 
 async def generate_script(deal_data: dict) -> Dict[str, str]:
     """
-    Generate a 30-45 second TikTok script via the Anthropic API.
+    Generate a 15-20 second viral TikTok voiceover script.
 
-    The script is structured as five sections:
-        hook      (0-3s)
-        problem   (3-8s)
-        reveal    (8-20s)
-        proof     (20-35s)
-        cta       (35-45s)
-
-    Args:
-        deal_data: Deal candidate data dictionary.
+    Rotates through VIRAL_FORMATS — content is deals/savings lifestyle focused,
+    not a product ad. Each format has a proven organic hook style.
+    Timing is compressed to ~20s so it rides naturally on trending music.
 
     Returns:
-        Dict with keys: hook, problem, reveal, proof, cta (and optionally full_script).
+        Dict with keys: hook, problem, reveal, proof, cta, full_script, format_name, pexels_query
     """
     anthropic_key = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
     model = os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-6")
     base_url = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
 
-    title = deal_data.get("title", "this product")
-    current_price = deal_data.get("current_price") or deal_data.get("price", "?")
-    original_price = deal_data.get("original_price", "?")
-    discount_pct = deal_data.get("discount_percent") or deal_data.get("discount_pct", "?")
-    rating = deal_data.get("rating", None)
-    review_count = deal_data.get("review_count", None)
+    # Pick a random viral format
+    fmt = random.choice(VIRAL_FORMATS)
 
-    rating_str = f"{rating}" if rating else "[rating]"
-    review_str = f"{int(review_count):,}" if review_count else "[review_count]"
+    title = deal_data.get("title", "this product")
+    current_price = deal_data.get("current_price") or deal_data.get("price", "")
+    original_price = deal_data.get("original_price", "")
+    discount_pct = deal_data.get("discount_percent") or deal_data.get("discount_pct", "")
+    category = deal_data.get("category", "")
+
+    try:
+        savings = f"${float(original_price) - float(current_price):.0f}" if original_price and current_price else "big money"
+    except (TypeError, ValueError):
+        savings = "big money"
+
+    hook_line = fmt["hook_template"].format(savings=savings, discount=discount_pct, category=category)
 
     system_prompt = (
-        "You are a viral TikTok content writer specialising in deal alerts. "
-        "Write punchy, conversational voiceover scripts that feel authentic and urgent — "
-        "like a real person talking to a friend, not a robot reading a product listing. "
-        "IMPORTANT: Before writing, rewrite the product name into natural spoken language. "
-        "Strip model numbers, SKU codes, and technical identifiers. "
-        "Examples: 'Sony WH-1000XM5 Wireless Noise Canceling Headphones' → "
-        "'Sony noise-canceling headphones', "
-        "'Apple AirPods Pro 2nd Generation MagSafe' → 'AirPods Pro', "
-        "'Instant Pot Duo 7-in-1 Electric Pressure Cooker 6 Quart' → 'Instant Pot'. "
-        "Use short punchy sentences. Vary your pacing — mix short punchy lines with "
-        "slightly longer ones. Sound excited but credible. "
-        "Always return a JSON object with exactly these five keys: "
+        "You are a viral TikTok creator who posts about deals, coupons, and saving money. "
+        "Your content feels 100% organic — like a real person sharing a discovery, "
+        "NOT a sponsored ad or product review. "
+        "You talk like a relatable friend texting excited about a deal they found. "
+        "Use short, punchy sentences — 5-10 words max per line. "
+        "Vary rhythm: sometimes fast staccato, sometimes a longer payoff line. "
+        "NEVER read out model numbers, SKUs, or full product names. "
+        "Refer to products naturally: 'these headphones', 'this kitchen gadget', 'it'. "
+        "The total script must be spoken in under 20 seconds — keep it tight. "
+        "Return ONLY a JSON object with exactly these five keys: "
         "hook, problem, reveal, proof, cta. "
-        "Each value is a single short paragraph of spoken narration for that section. "
-        "The cta section must always direct viewers to join the Telegram channel for "
-        "daily deal alerts — use phrases like 'Join our free Telegram for daily deals', "
-        "'Link in bio to our Telegram deal channel', or 'Follow us on Telegram so you "
-        "never miss a deal like this'. "
-        "Do not include any markdown, code fences, or extra keys."
+        "hook = 1-2 punchy sentences (pattern interrupt). "
+        "problem = 1-2 sentences (relatable struggle with prices / missing deals). "
+        "reveal = 2-3 sentences (the deal details — price, savings, why it's wild). "
+        "proof = 1-2 sentences (social proof or urgency — reviews, selling fast). "
+        "cta = 1 sentence directing viewers to the Telegram channel for daily deals. "
+        "No markdown, no code fences, no extra keys."
     )
 
     user_prompt = (
-        f"Write a 30-45 second TikTok voiceover script for this deal:\n\n"
-        f"Product: {title}\n"
-        f"Original price: ${original_price}\n"
-        f"Current price: ${current_price}\n"
-        f"Discount: {discount_pct}% off\n"
-        f"Rating: {rating_str} stars\n"
-        f"Reviews: {review_str}\n\n"
-        "Follow this exact structure:\n"
-        f"- hook (0-3s): Start with 'Wait, {title} is HOW cheap right now??'\n"
-        f"- problem (3-8s): 'Been wanting this but couldn't justify ${original_price}'\n"
-        f"- reveal (8-20s): 'Just dropped to ${current_price} — that\\'s {discount_pct}% off'\n"
-        f"- proof (20-35s): '{rating_str} stars, {review_str} reviews' plus social proof\n"
-        "- cta (35-45s): 'Link in bio, won\\'t last long'\n\n"
+        f"Write a viral TikTok voiceover using this format: '{fmt['name']}'\n\n"
+        f"Theme: {fmt['theme']}\n"
+        f"Opening hook line to build from: '{hook_line}'\n\n"
+        f"Deal details to weave in naturally:\n"
+        f"- Product category: {category or 'consumer goods'}\n"
+        f"- Was: ${original_price} → Now: ${current_price}\n"
+        f"- Savings: {savings} ({discount_pct}% off)\n\n"
+        "Make it feel real, organic, and like something that would stop someone mid-scroll. "
+        "Do NOT sound like an ad. Sound like a person who just found this and HAS to share it.\n\n"
         "Return ONLY a JSON object with keys: hook, problem, reveal, proof, cta."
     )
 
     if not anthropic_key:
-        logger.warning("ANTHROPIC_AUTH_TOKEN not set; using template script fallback.")
-        return _fallback_script(title, current_price, original_price, discount_pct, rating_str, review_str)
+        logger.warning("ANTHROPIC_AUTH_TOKEN not set; using fallback script.")
+        return _fallback_script(fmt, hook_line, savings, discount_pct, current_price)
 
     headers = {
         "x-api-key": anthropic_key,
@@ -547,19 +712,21 @@ async def generate_script(deal_data: dict) -> Dict[str, str]:
     }
     payload = {
         "model": model,
-        "max_tokens": 512,
+        "max_tokens": 400,
         "system": system_prompt,
         "messages": [{"role": "user", "content": user_prompt}],
     }
 
-    async with httpx.AsyncClient(timeout=30.0, base_url=base_url) as client:
-        response = await client.post("/v1/messages", headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
+    try:
+        async with httpx.AsyncClient(timeout=30.0, base_url=base_url) as client:
+            response = await client.post("/v1/messages", headers=headers, json=payload)
+            response.raise_for_status()
+            data = response.json()
+        raw_text = data["content"][0]["text"].strip()
+    except Exception as exc:
+        logger.warning("AI script generation failed (%s); using fallback.", exc)
+        return _fallback_script(fmt, hook_line, savings, discount_pct, current_price)
 
-    raw_text = data["content"][0]["text"].strip()
-
-    # Strip markdown code fences if the model wrapped the JSON
     if raw_text.startswith("```"):
         raw_text = raw_text.split("```")[1]
         if raw_text.startswith("json"):
@@ -569,10 +736,9 @@ async def generate_script(deal_data: dict) -> Dict[str, str]:
     try:
         sections = json.loads(raw_text)
     except json.JSONDecodeError:
-        logger.warning("Anthropic returned non-JSON script; using fallback template.")
-        return _fallback_script(title, current_price, original_price, discount_pct, rating_str, review_str)
+        logger.warning("Non-JSON response; using fallback script.")
+        return _fallback_script(fmt, hook_line, savings, discount_pct, current_price)
 
-    # Ensure all required keys exist
     for key in ("hook", "problem", "reveal", "proof", "cta"):
         if key not in sections:
             sections[key] = ""
@@ -580,27 +746,341 @@ async def generate_script(deal_data: dict) -> Dict[str, str]:
     sections["full_script"] = " ".join(
         sections[k] for k in ("hook", "problem", "reveal", "proof", "cta") if sections[k]
     )
+    sections["format_name"] = fmt["name"]
+    sections["pexels_query"] = fmt["pexels_query"]
+    return _inject_cta_enhancements(sections)
+
+
+def _inject_cta_enhancements(sections: Dict[str, str]) -> Dict[str, str]:
+    """
+    Append TELEGRAM_INVITE_LINK and a random COMMENT_BAIT line to the CTA section.
+
+    Called as a post-processing step after both AI and fallback script generation.
+    """
+    telegram_link = os.environ.get("TELEGRAM_INVITE_LINK", "")
+    comment_bait = random.choice(COMMENT_BAIT)
+
+    cta = sections.get("cta", "")
+    if telegram_link and telegram_link not in cta:
+        cta = f"{cta} Free. 47K+ members. 10+ deals daily. {telegram_link}"
+    cta = f"{cta} {comment_bait}"
+    sections["cta"] = cta.strip()
+
+    # Rebuild full_script with updated CTA
+    sections["full_script"] = " ".join(
+        sections[k] for k in ("hook", "problem", "reveal", "proof", "cta")
+        if sections.get(k)
+    )
     return sections
 
 
 def _fallback_script(
-    title: str,
-    current_price: Any,
-    original_price: Any,
+    fmt: Dict[str, str],
+    hook_line: str,
+    savings: str,
     discount_pct: Any,
-    rating_str: str,
-    review_str: str,
+    current_price: Any,
 ) -> Dict[str, str]:
-    """Return a template-based script when the Anthropic API is unavailable."""
-    sections = {
-        "hook": f"Wait, {title} is HOW cheap right now??",
-        "problem": f"I've been wanting this for ages but just couldn't justify paying ${original_price}.",
-        "reveal": f"It just dropped to ${current_price} — that's {discount_pct}% off! I couldn't believe it.",
-        "proof": f"{rating_str} stars with {review_str} reviews. People absolutely love this thing.",
-        "cta": "Join our free Telegram for daily deals like this — link in bio. Don't wait, this won't last long!",
+    """Organic fallback scripts — one per viral format."""
+    fallbacks: Dict[str, Dict[str, str]] = {
+        "pov_savings": {
+            "hook":    hook_line,
+            "problem": "We're all out here paying way too much for stuff.",
+            "reveal":  f"Just found this marked down {discount_pct}% — down to ${current_price}. That's actually insane.",
+            "proof":   "Thousands of people already grabbed it. Won't last.",
+            "cta":     "Link in bio — join our Telegram for daily deals like this.",
+        },
+        "stop_paying": {
+            "hook":    hook_line,
+            "problem": "Full price is a choice. And it's the wrong one.",
+            "reveal":  f"This one is {discount_pct}% off right now. Save {savings}.",
+            "proof":   "This deal won't be there tomorrow. I'm not joking.",
+            "cta":     "Follow for more — link in bio to our free deal channel.",
+        },
+        "secret_deal": {
+            "hook":    hook_line,
+            "problem": "Most people scroll right past deals like this.",
+            "reveal":  f"{discount_pct}% off. Save {savings}. Right now.",
+            "proof":   "Selling fast. Grab it before it goes back to full price.",
+            "cta":     "Join our Telegram — we post these daily. Link in bio.",
+        },
+        "countdown": {
+            "hook":    hook_line,
+            "problem": "These prices won't last — they never do.",
+            "reveal":  f"Up to {discount_pct}% off. Saving people {savings} today.",
+            "proof":   "Already trending. Don't sleep on it.",
+            "cta":     "Free daily deals in our Telegram — link in bio.",
+        },
     }
-    sections["full_script"] = " ".join(sections[k] for k in ("hook", "problem", "reveal", "proof", "cta"))
-    return sections
+    sections = fallbacks.get(fmt["name"], fallbacks["pov_savings"])
+    sections = dict(sections)
+    sections["full_script"] = " ".join(
+        sections[k] for k in ("hook", "problem", "reveal", "proof", "cta") if sections.get(k)
+    )
+    sections["format_name"] = fmt["name"]
+    sections["pexels_query"] = fmt["pexels_query"]
+    return _inject_cta_enhancements(sections)
+
+
+# ---------------------------------------------------------------------------
+# Meme content generation
+# ---------------------------------------------------------------------------
+
+
+def _meme_format_to_scenes(fmt: Dict[str, Any]) -> Dict[str, str]:
+    """Normalize any MEME_FORMAT dict to the 4 generic scene keys."""
+    name = fmt["name"]
+    if name == "two_types":
+        return {
+            "scene1": fmt["setup"],
+            "scene2": fmt["type_a"] + "\n" + fmt["type_b"],
+            "scene3": fmt["punchline"],
+            "cta": fmt["cta"],
+        }
+    elif name == "skill_issue":
+        return {
+            "scene1": fmt["setup"],
+            "scene2": fmt["reaction"],
+            "scene3": fmt["detail"],
+            "cta": fmt["cta"],
+        }
+    elif name == "amazon_knows":
+        return {
+            "scene1": fmt["setup"],
+            "scene2": fmt["reaction"],
+            "scene3": (fmt["detail"] + "\n" + fmt.get("punchline", "")).strip(),
+            "cta": fmt["cta"],
+        }
+    elif name == "horror_story":
+        return {
+            "scene1": fmt["setup"],
+            "scene2": fmt["part1"] + "\n" + fmt["part2"],
+            "scene3": fmt["part3"],
+            "cta": fmt["cta"],
+        }
+    elif name == "pov_found_group":
+        return {
+            "scene1": fmt["setup"],
+            "scene2": fmt["beat1"] + "\n" + fmt["beat2"],
+            "scene3": fmt["beat3"],
+            "cta": fmt["cta"],
+        }
+    elif name == "ancestor_disappointment":
+        return {
+            "scene1": fmt["setup"],
+            "scene2": fmt["reaction"] + "\n" + fmt["detail"],
+            "scene3": fmt["punchline"],
+            "cta": fmt["cta"],
+        }
+    else:
+        return {
+            "scene1": fmt.get("setup", ""),
+            "scene2": fmt.get("detail", fmt.get("reaction", "")),
+            "scene3": fmt.get("punchline", ""),
+            "cta": fmt.get("cta", "link in bio."),
+        }
+
+
+def _fallback_meme_script(fmt: Dict[str, Any], scenes: Dict[str, str], telegram_link: str) -> Dict[str, str]:
+    """Return template scenes with TELEGRAM_INVITE_LINK injected into cta."""
+    result = dict(scenes)
+    if telegram_link and telegram_link not in result.get("cta", ""):
+        result["cta"] = result.get("cta", "link in bio.").replace(
+            "link in bio.", f"free group: {telegram_link}"
+        )
+    result["full_script"] = " ".join(
+        result.get(k, "") for k in ("scene1", "scene2", "scene3", "cta") if result.get(k)
+    )
+    result["format_name"] = fmt["name"]
+    result["pexels_query"] = fmt.get("pexels_query", "lifestyle shopping funny")
+    result["meme_style"] = fmt.get("meme_style", "dark")
+    return result
+
+
+async def generate_meme_script() -> Dict[str, str]:
+    """
+    Generate a 15-second viral TikTok meme voiceover script.
+
+    Picks a random MEME_FORMAT, calls Anthropic to riff on the template,
+    falls back to template text if AI is unavailable.
+
+    Returns:
+        Dict with keys: scene1, scene2, scene3, cta, full_script,
+        format_name, pexels_query, meme_style.
+    """
+    anthropic_key = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
+    model = os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-6")
+    base_url = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+    telegram_link = os.environ.get("TELEGRAM_INVITE_LINK", "t.me/coupondealssteals")
+
+    fmt = random.choice(MEME_FORMATS)
+    scenes = _meme_format_to_scenes(fmt)
+
+    system_prompt = (
+        "You are a viral TikTok meme creator in the personal finance / deals space. "
+        "Your content is edgy, relatable, and spreads because it's genuinely funny. "
+        "You roast people who pay full price — in a fun, not mean way. "
+        "Think TikTok humor: short punchy sentences, lowercase is fine, emoji used sparingly. "
+        "Never sound corporate. Sound like a friend texting you memes at 2am. "
+        "Return ONLY a JSON object with keys: scene1, scene2, scene3, cta. "
+        "Each value is 1-3 short punchy lines (30 words max each). "
+        "The cta must mention the free Telegram group and say 'link in bio'. "
+        "No markdown, no code fences, no extra keys."
+    )
+
+    user_prompt = (
+        f"Riff on this meme format for a TikTok about our free deals group:\n\n"
+        f"Format: '{fmt['name']}'\n"
+        f"Template scenes:\n"
+        f"  Scene 1: {scenes['scene1']}\n"
+        f"  Scene 2: {scenes['scene2']}\n"
+        f"  Scene 3: {scenes['scene3']}\n"
+        f"  CTA: {scenes['cta']}\n\n"
+        f"Make it funnier and more relatable, same structure. "
+        f"CTA must mention the free Telegram group: {telegram_link}\n"
+        f"Return ONLY JSON with keys: scene1, scene2, scene3, cta."
+    )
+
+    if not anthropic_key:
+        logger.warning("ANTHROPIC_AUTH_TOKEN not set; using fallback meme script.")
+        return _fallback_meme_script(fmt, scenes, telegram_link)
+
+    headers = {
+        "x-api-key": anthropic_key,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "max_tokens": 300,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": user_prompt}],
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0, base_url=base_url) as client:
+            response = await client.post("/v1/messages", headers=headers, json=payload)
+            response.raise_for_status()
+            data = response.json()
+        raw_text = data["content"][0]["text"].strip()
+    except Exception as exc:
+        logger.warning("AI meme script generation failed (%s); using fallback.", exc)
+        return _fallback_meme_script(fmt, scenes, telegram_link)
+
+    if raw_text.startswith("```"):
+        raw_text = raw_text.split("```")[1]
+        if raw_text.startswith("json"):
+            raw_text = raw_text[4:]
+    raw_text = raw_text.strip()
+
+    try:
+        result = json.loads(raw_text)
+    except json.JSONDecodeError:
+        logger.warning("Non-JSON meme response; using fallback.")
+        return _fallback_meme_script(fmt, scenes, telegram_link)
+
+    for key in ("scene1", "scene2", "scene3", "cta"):
+        if key not in result:
+            result[key] = scenes.get(key, "")
+
+    result["full_script"] = " ".join(
+        result[k] for k in ("scene1", "scene2", "scene3", "cta") if result.get(k)
+    )
+    result["format_name"] = fmt["name"]
+    result["pexels_query"] = fmt.get("pexels_query", "lifestyle shopping")
+    result["meme_style"] = fmt.get("meme_style", "dark")
+    return result
+
+
+async def generate_meme_and_notify() -> Dict[str, Any]:
+    """
+    Generate a meme TikTok video (no deal data needed) and notify operator.
+
+    Steps:
+        1. generate_meme_script() — pick random meme format, AI riff or fallback.
+        2. _build_voiceover()     — edge-tts narration.
+        3. _fetch_pexels_clips()  — lifestyle footage matching the meme vibe.
+        4. _assemble_video()      — MoviePy with captions.
+        5. manual_upload_helper() — Telegram DM with upload instructions.
+        6. cross_poster           — teaser tweet to Twitter.
+
+    Returns:
+        Dict with success (bool), video_path (str | None), format (str), error (str | None).
+    """
+    pexels_api_key = os.environ.get("PEXELS_API_KEY", "")
+
+    try:
+        script_sections = await generate_meme_script()
+        logger.info("Meme script generated: format=%s", script_sections.get("format_name"))
+    except Exception as exc:  # noqa: BLE001
+        return {"success": False, "video_path": None, "error": f"Meme script failed: {exc}"}
+
+    try:
+        audio_bytes = await _build_voiceover(script_sections.get("full_script", ""))
+        logger.info("Meme voiceover generated via edge-tts")
+    except Exception as exc:  # noqa: BLE001
+        return {"success": False, "video_path": None, "error": f"Voiceover failed: {exc}"}
+
+    pexels_query = script_sections.get("pexels_query", "person laughing shopping lifestyle")
+    try:
+        clip_paths = await _fetch_pexels_clips(pexels_query, pexels_api_key, count=3)
+        logger.info("Downloaded %d Pexels clips for meme", len(clip_paths))
+    except Exception as exc:  # noqa: BLE001
+        return {"success": False, "video_path": None, "error": f"Pexels failed: {exc}"}
+
+    # Map meme scenes to standard section keys (_assemble_video uses hook/problem/reveal/proof/cta)
+    meme_sections: Dict[str, str] = {
+        "hook":    script_sections.get("scene1", ""),
+        "problem": script_sections.get("scene2", ""),
+        "reveal":  script_sections.get("scene3", ""),
+        "proof":   "",
+        "cta":     script_sections.get("cta", ""),
+    }
+
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    fmt_name = script_sections.get("format_name", "meme")
+    output_path = os.path.join(OUTPUT_DIR, f"meme_{timestamp}_{fmt_name}.mp4")
+
+    try:
+        final_video_path = _assemble_video(clip_paths, audio_bytes, meme_sections, output_path)
+        logger.info("Meme video assembled: %s", final_video_path)
+    except Exception as exc:  # noqa: BLE001
+        return {"success": False, "video_path": None, "error": f"Assembly failed: {exc}"}
+
+    caption = (
+        f"[MEME] {fmt_name}\n"
+        f"Style: {script_sections.get('meme_style', 'dark')}\n\n"
+        + script_sections.get("full_script", "")[:300]
+    )
+    meme_deal_data = {
+        "title": f"Meme: {fmt_name}",
+        "viral_potential": 8,
+        "format_name": fmt_name,
+    }
+    await manual_upload_helper(meme_deal_data, final_video_path, caption)
+
+    try:
+        from deal_sniper_ai.posting_engine.cross_poster import post_tiktok_teaser_tweet
+        await post_tiktok_teaser_tweet(
+            None, final_video_path,
+            meme_format=fmt_name,
+            meme_teaser=script_sections.get("scene1", ""),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Meme cross-post teaser failed (non-fatal): %s", exc)
+
+    return {
+        "success": True,
+        "video_path": final_video_path,
+        "format": fmt_name,
+        "error": None,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Manual upload helper
+# ---------------------------------------------------------------------------
 
 
 async def manual_upload_helper(deal_data: dict, video_path: str, caption: str) -> bool:
@@ -621,21 +1101,31 @@ async def manual_upload_helper(deal_data: dict, video_path: str, caption: str) -
     channel_id = os.environ.get("TELEGRAM_OWNER_ID") or os.environ.get("TELEGRAM_CHANNEL_ID", "")
 
     title = deal_data.get("title", "Deal")
+    format_name = deal_data.get("format_name", "pov_savings")
+    hashtag_set = HASHTAG_SETS.get(format_name, "#Deals #DealAlert #Savings #FYP #TikTokDeals #AmazonDeals #MoneyHacks #FrugalLiving #CouponLife #ForYou")
+    pinned_comment = random.choice(COMMENT_BAIT)
 
     telegram_channel = os.environ.get("TELEGRAM_CHANNEL_ID", "our Telegram channel")
     message = (
         "\U0001f3ac TikTok Video Ready!\n\n"
         f"Title: {title}\n"
+        f"Format: {format_name}\n"
         f"Video: {video_path}\n\n"
         "Caption to copy:\n"
         f"{caption}\n\n"
+        "Hashtags to add:\n"
+        f"{hashtag_set}\n\n"
         "Upload checklist:\n"
         "1. Open TikTok app \u2192 + button\n"
         "2. Select video from path above\n"
         "3. Paste caption (CTA directs to Telegram for daily deals)\n"
-        "4. Add link to Telegram channel in bio if not already set\n"
-        "5. Add trending sounds/hashtags\n"
-        "6. Post & monitor first 30 min for engagement\n\n"
+        "4. Add hashtags from above\n"
+        "5. Post, then immediately pin this comment:\n"
+        f"   \u2192 {pinned_comment}\n"
+        "   \u26a0 Pin this comment first for algorithm boost\n"
+        "6. Add link to Telegram channel in bio if not already set\n"
+        f"7. \U0001f3b5 Sound tip: {random.choice(TRENDING_SOUND_TIPS)}\n"
+        "8. Monitor first 30 min for engagement\n\n"
         f"Telegram channel ID: {telegram_channel}"
     )
 
@@ -744,6 +1234,16 @@ async def generate_and_notify(
         logger.error("Script generation failed: %s", exc)
         return {"success": False, "video_path": None, "error": f"Script generation failed: {exc}"}
 
+    # Inject cliffhanger ending for ultra-viral deals (viral_potential >= 9)
+    if viral_potential >= 9:
+        cliffhanger = random.choice(CLIFFHANGER_ENDINGS)
+        script_sections["cta"] = f"{script_sections.get('cta', '')} {cliffhanger}".strip()
+        script_sections["full_script"] = " ".join(
+            script_sections[k] for k in ("hook", "problem", "reveal", "proof", "cta")
+            if script_sections.get(k)
+        )
+        logger.info("Cliffhanger injected for viral_potential=%.1f", viral_potential)
+
     # --- Step 2: Generate voiceover with edge-tts (natural human voice) ---
     try:
         audio_bytes = await _build_voiceover(script_sections.get("full_script", ""))
@@ -755,8 +1255,9 @@ async def generate_and_notify(
         logger.error("Unexpected voiceover error: %s", exc)
         return {"success": False, "video_path": None, "error": f"Voiceover error: {exc}"}
 
-    # --- Step 3: Download Pexels clips using smart product keywords ---
-    pexels_query = _get_pexels_keywords(title, category)
+    # --- Step 3: Download Pexels clips using viral format's lifestyle query ---
+    # Prefer the format's pexels_query (lifestyle/organic) over product-specific keywords
+    pexels_query = script_sections.get("pexels_query") or _get_pexels_keywords(title, category)
     try:
         clip_paths = await _fetch_pexels_clips(pexels_query, pexels_api_key, count=3)
         logger.info("Downloaded %d Pexels clips for '%s'", len(clip_paths), pexels_query)
@@ -814,8 +1315,16 @@ async def generate_and_notify(
         logger.warning("Could not update posted_deals.tiktok_video_path: %s", exc)
         # Non-fatal; continue to notification
 
-    # --- Step 6: Send Telegram notification ---
-    await manual_upload_helper(deal_data, final_video_path, caption)
+    # --- Step 6: Send Telegram notification (include format_name for hashtag sets) ---
+    deal_data_with_format = {**deal_data, "format_name": script_sections.get("format_name", "pov_savings")}
+    await manual_upload_helper(deal_data_with_format, final_video_path, caption)
+
+    # --- Step 7: Cross-post teaser to Twitter ---
+    try:
+        from deal_sniper_ai.posting_engine.cross_poster import post_tiktok_teaser_tweet
+        await post_tiktok_teaser_tweet(deal_data, final_video_path)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Cross-post teaser tweet failed (non-fatal): %s", exc)
 
     return {"success": True, "video_path": final_video_path, "error": None}
 

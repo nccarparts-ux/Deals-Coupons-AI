@@ -15,13 +15,15 @@ import asyncio
 import base64
 import hashlib
 import hmac
+import json
 import logging
 import os
 import random
 import time
 import urllib.parse
 import uuid
-from datetime import date
+from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 import httpx
@@ -30,6 +32,53 @@ from ..formatter import PlatformFormatter
 from deal_sniper_ai.database.supabase_client import get_supabase_client
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Meme tweet pool — edgy, relatable, high retweet / share potential
+# Rotated 1x per day alongside deal posts. No product mention.
+# ---------------------------------------------------------------------------
+
+MEME_TWEETS = [
+    # Overspending shame
+    "paying full price in this economy is genuinely a personality disorder",
+    "me clicking 'place order' without a coupon code: a horror story",
+    "corporations when I pay full price: \U0001f911  me: \U0001f60a  me 10 min later: \U0001f62d",
+    "my bank statement is just a list of things I could've gotten cheaper",
+    # Deal hacker superiority
+    "there are two types of people: those who use coupon codes and those who are wrong",
+    "i have never once paid full price and I'm built different",
+    "normal people: *buys something*\ndeal people: *buys same thing for 60% less, with cashback*",
+    "being bad at finding deals is a skill issue at this point",
+    # Platform-specific edgy angles
+    "Amazon really said 'original price: $400' and thought we wouldn't notice it's been $400 for 11 years",
+    "retailers pricing things at $399.99 thinking we don't know about the glitch that makes it $12",
+    "POV: you find out your friend paid full price. you say nothing. you pity them silently.",
+    "the audacity of full price existing when coupon stacking is a thing",
+    # FOMO + CTA (inject telegram link at post time)
+    "47,000 people woke up today and didn't pay full price for anything. that's the group. link in bio.",
+    "the deal group in my bio has been finding free items for months and you're still paying full price why",
+    "imagine paying full price when there's a free group that texts you deals every single day \U0001f480",
+]
+
+# Viral tweet format templates — rotated alongside deal posts
+TWITTER_VIRAL_FORMATS = [
+    {
+        "name": "poll",
+        "text": "Are you still paying full price in {year}? \U0001f914\n\nOur free group sends 10+ deals daily. No subscription. Just savings. Link in bio.",
+    },
+    {
+        "name": "shock_stat",
+        "text": "Quick stat: people in our free deal group have saved over $500 this month on everyday items.\n\nNo catch. No subscription.\n\nLink in bio \U0001f447",
+    },
+    {
+        "name": "thread_teaser",
+        "text": "\U0001f9f5 5 things on Amazon right now that feel illegal to buy at full price:\n\n(thread)\n\n1/ They've all been 40-70% off in our group this week. Follow for the list.",
+    },
+    {
+        "name": "engagement_hook",
+        "text": "Tell me your last full-price purchase and I'll find it cheaper. I'll wait.",
+    },
+]
 
 
 class TwitterPosterError(Exception):
@@ -162,25 +211,35 @@ class TwitterPoster:
                 return result
 
         # Standard single-tweet path
-        logger.warning("Twitter/X API v2 implementation requires OAuth 2.0 setup")
-        logger.info(f"Would post to Twitter: {formatted_message[:50]}...")
-
-        # Generate hashtags
         hashtags = self._generate_hashtags(deal_data)
+        telegram_link = os.environ.get("TELEGRAM_INVITE_LINK", "")
         full_message = f"{formatted_message} {hashtags}".strip()
-
-        # Truncate to 280 characters
+        if telegram_link and telegram_link not in full_message:
+            full_message = f"{full_message}\n{telegram_link}"
         if len(full_message) > 280:
             full_message = full_message[:277] + "..."
 
-        await self._increment_daily_count(daily_count)
+        response = await self._post_tweet_v2(full_message)
+        if response:
+            tweet_id = response.get("data", {}).get("id")
+            await self._increment_daily_count(daily_count)
+            logger.info("Deal tweet posted (id=%s)", tweet_id)
+            return {
+                "success": True, "platform": "twitter",
+                "tweet_id": tweet_id, "formatted_message": full_message,
+            }
 
+        # API unavailable — save for manual posting + send Telegram DM
+        title = deal_data.get("title", "Deal")
+        file_path = await self._save_for_manual_post(
+            full_message, tweet_type="deal",
+            hashtags=hashtags,
+            extra_info=f"Deal: {title}",
+        )
         return {
-            'success': True,
-            'platform': 'twitter',
-            'message': 'Twitter posting placeholder - requires OAuth 2.0 implementation',
-            'formatted_message': full_message,
-            'hashtags': hashtags
+            "success": False, "platform": "twitter",
+            "error": "api_unavailable", "manual_file": file_path,
+            "formatted_message": full_message,
         }
 
     # ── Rate limit tracking ──────────────────────────────────────────────────
@@ -342,6 +401,7 @@ class TwitterPoster:
         tweet_ids: List[str] = []
         reply_to_id: Optional[str] = None
 
+        api_working = True
         for i, tweet_text in enumerate([tweet1, tweet2, tweet3], start=1):
             response = await self._post_tweet_v2(tweet_text, reply_to_id=reply_to_id)
             if response:
@@ -353,19 +413,30 @@ class TwitterPoster:
                 else:
                     logger.warning(f"Thread tweet {i}/3: no tweet id in response")
             else:
-                logger.warning(
-                    f"Thread tweet {i}/3 placeholder (OAuth not configured yet). "
-                    f"Text: {tweet_text[:60]}..."
-                )
+                logger.warning(f"Thread tweet {i}/3 API failed — falling back to manual")
+                api_working = False
+                break
 
+        if tweet_ids:
+            return {
+                'success': True, 'platform': 'twitter', 'thread': True,
+                'thread_tweet_ids': tweet_ids,
+                'tweet_texts': [tweet1, tweet2, tweet3],
+                'affiliate_url': affiliate_url,
+                'message': f"3-tweet thread posted for viral deal '{title}'"
+            }
+
+        # API unavailable — save all 3 tweets for manual posting + Telegram DM
+        file_path = await self._save_for_manual_post(
+            tweet1, tweet_type="thread",
+            hashtags=self._generate_hashtags(deal_data),
+            thread_tweets=[tweet1, tweet2, tweet3],
+            extra_info=f"Deal: {title}",
+        )
         return {
-            'success': True,
-            'platform': 'twitter',
-            'thread': True,
-            'thread_tweet_ids': tweet_ids,
+            'success': False, 'platform': 'twitter', 'thread': True,
+            'error': 'api_unavailable', 'manual_file': file_path,
             'tweet_texts': [tweet1, tweet2, tweet3],
-            'affiliate_url': affiliate_url,
-            'message': f"3-tweet thread posted for viral deal '{title}'"
         }
 
     async def _lookup_affiliate_url(self, deal_data: Dict[str, Any]) -> Optional[str]:
@@ -731,6 +802,413 @@ class TwitterPoster:
         except Exception as e:
             logger.error(f"Twitter connection test failed: {e}")
             return False
+
+    # ── Meme tweet ────────────────────────────────────────────────────────────
+
+    async def post_meme_tweet(self) -> Dict[str, Any]:
+        """
+        Post a random meme tweet from MEME_TWEETS (no deal data needed).
+
+        Optionally enhances the selected template via Anthropic before posting.
+        Injects TELEGRAM_INVITE_LINK if set.
+
+        Returns:
+            Dict with success (bool), tweet_id (str | None), text (str).
+        """
+        telegram_link = os.environ.get("TELEGRAM_INVITE_LINK", "")
+        base_text = random.choice(MEME_TWEETS)
+
+        # Inject telegram link for CTA tweets
+        if "link in bio" in base_text and telegram_link:
+            base_text = base_text.replace("link in bio.", telegram_link).replace(
+                "link in bio", telegram_link
+            )
+
+        # Try AI enhancement
+        enhanced = await self._enhance_meme_tweet(base_text)
+        tweet_text = enhanced if enhanced else base_text
+        if len(tweet_text) > 280:
+            tweet_text = tweet_text[:277] + "..."
+
+        daily_count = await self._get_daily_count()
+        if daily_count >= 17:
+            logger.warning("Twitter daily limit reached; skipping meme tweet.")
+            return {"success": False, "tweet_id": None, "text": tweet_text,
+                    "error": "daily_limit_reached"}
+
+        response = await self._post_tweet_v2(tweet_text)
+        if response:
+            tweet_id = response.get("data", {}).get("id")
+            await self._increment_daily_count(daily_count)
+            logger.info("Meme tweet posted (id=%s): %s...", tweet_id, tweet_text[:60])
+            return {"success": True, "tweet_id": tweet_id, "text": tweet_text}
+
+        # API unavailable — save for manual posting + send Telegram DM
+        file_path = await self._save_for_manual_post(tweet_text, tweet_type="meme")
+        return {
+            "success": False, "tweet_id": None, "text": tweet_text,
+            "error": "api_unavailable", "manual_file": file_path,
+        }
+
+    async def post_viral_tweet(self) -> Dict[str, Any]:
+        """
+        Post a random viral-format tweet (poll, shock stat, thread teaser, engagement hook).
+
+        Rotates through TWITTER_VIRAL_FORMATS. Injects TELEGRAM_INVITE_LINK where applicable.
+
+        Returns:
+            Dict with success (bool), tweet_id (str | None), format (str).
+        """
+        import datetime as _dt
+        telegram_link = os.environ.get("TELEGRAM_INVITE_LINK", "")
+        fmt = random.choice(TWITTER_VIRAL_FORMATS)
+        text = fmt["text"].format(year=_dt.date.today().year)
+
+        if telegram_link and "link in bio" in text:
+            text = text.replace("Link in bio \U0001f447", telegram_link).replace(
+                "link in bio", telegram_link
+            )
+        if len(text) > 280:
+            text = text[:277] + "..."
+
+        daily_count = await self._get_daily_count()
+        if daily_count >= 17:
+            logger.warning("Twitter daily limit reached; skipping viral tweet.")
+            return {"success": False, "format": fmt["name"], "error": "daily_limit_reached"}
+
+        response = await self._post_tweet_v2(text)
+        if response:
+            tweet_id = response.get("data", {}).get("id")
+            await self._increment_daily_count(daily_count)
+            logger.info("Viral tweet posted format=%s (id=%s)", fmt["name"], tweet_id)
+            return {"success": True, "tweet_id": tweet_id, "format": fmt["name"], "text": text}
+
+        # API unavailable — save for manual posting + send Telegram DM
+        file_path = await self._save_for_manual_post(text, tweet_type=f"viral_{fmt['name']}")
+        return {
+            "success": False, "format": fmt["name"],
+            "error": "api_unavailable", "manual_file": file_path,
+        }
+
+    async def _enhance_meme_tweet(self, base_text: str) -> Optional[str]:
+        """
+        Use Anthropic to riff on a meme tweet template. Falls back to None on failure.
+
+        Args:
+            base_text: The base meme tweet to enhance.
+
+        Returns:
+            Enhanced tweet text (max 270 chars), or None if AI unavailable.
+        """
+        anthropic_key = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
+        model = os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-6")
+        base_url = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+
+        if not anthropic_key:
+            return None
+
+        system = (
+            "You write edgy, funny, viral personal finance tweets about deals and saving money. "
+            "Keep the same core message but make it more shareable and relatable. "
+            "Sound like a real person on Twitter — lowercase is fine, keep it under 250 chars. "
+            "Return ONLY the tweet text. No quotes, no hashtags, no explanation."
+        )
+        user = f"Riff on this tweet to make it funnier/more shareable:\n\n{base_text}"
+
+        try:
+            headers = {
+                "x-api-key": anthropic_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            }
+            payload = {
+                "model": model,
+                "max_tokens": 120,
+                "system": system,
+                "messages": [{"role": "user", "content": user}],
+            }
+            async with httpx.AsyncClient(timeout=20.0, base_url=base_url) as client:
+                resp = await client.post("/v1/messages", headers=headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+            text = data["content"][0]["text"].strip().strip('"\'')
+            return text[:270] if text else None
+        except Exception as exc:
+            logger.debug("Meme tweet AI enhancement failed (non-fatal): %s", exc)
+            return None
+
+    # ── Twitter engagement bot ────────────────────────────────────────────────
+
+    async def twitter_engagement_bot(self, max_replies: int = 10) -> Dict[str, Any]:
+        """
+        Search recent tweets with deal hashtags and reply with a helpful 1-liner
+        + soft Telegram group mention (up to max_replies per run).
+
+        Uses bearer token for search (read-only) and OAuth 1.0a for replies.
+        Respects the daily free-tier post limit.
+
+        Args:
+            max_replies: Cap on replies per invocation (default 10).
+
+        Returns:
+            Dict with replied_count, skipped, errors.
+        """
+        if not self.bearer_token:
+            await self._get_bearer_token()
+
+        search_hashtags = ["#deals", "#coupons", "#frugal", "#AmazonDeals"]
+        replied_count = 0
+        skipped = 0
+        errors: List[str] = []
+
+        telegram_link = os.environ.get("TELEGRAM_INVITE_LINK", "")
+
+        for hashtag in search_hashtags:
+            if replied_count >= max_replies:
+                break
+
+            daily_count = await self._get_daily_count()
+            if daily_count >= 17:
+                logger.warning("engagement_bot: daily limit reached, stopping.")
+                break
+
+            try:
+                headers = {
+                    "Authorization": f"Bearer {self.bearer_token}",
+                    "Content-Type": "application/json",
+                }
+                # Exclude retweets + replies + our own tweets to avoid loops
+                query = f"{hashtag} -is:retweet -is:reply lang:en"
+                params = {
+                    "query": query,
+                    "tweet.fields": "author_id,public_metrics",
+                    "expansions": "author_id",
+                    "user.fields": "username",
+                    "max_results": 10,
+                }
+                search_resp = await self.client.get(
+                    f"{self.api_base}/tweets/search/recent",
+                    headers=headers,
+                    params=params,
+                )
+                search_resp.raise_for_status()
+                search_data = search_resp.json()
+
+                users_map: Dict[str, str] = {
+                    u["id"]: u.get("username", "")
+                    for u in search_data.get("includes", {}).get("users", [])
+                }
+
+                for tweet in search_data.get("data", []):
+                    if replied_count >= max_replies:
+                        break
+                    daily_count = await self._get_daily_count()
+                    if daily_count >= 17:
+                        break
+
+                    tweet_id = tweet.get("id")
+                    author_id = tweet.get("author_id", "")
+                    username = users_map.get(author_id, "")
+                    if not tweet_id or not username:
+                        skipped += 1
+                        continue
+
+                    # Generate reply via Anthropic
+                    reply_text = await self._generate_engagement_reply(
+                        tweet.get("text", ""), username, telegram_link
+                    )
+                    if not reply_text:
+                        skipped += 1
+                        continue
+
+                    resp = await self._post_tweet_v2(reply_text, reply_to_id=tweet_id)
+                    if resp and resp.get("data", {}).get("id"):
+                        replied_count += 1
+                        await self._increment_daily_count(daily_count)
+                        logger.info(
+                            "engagement_bot: replied to @%s (tweet %s)", username, tweet_id
+                        )
+                        await asyncio.sleep(random.uniform(5, 15))  # be human
+                    else:
+                        errors.append(tweet_id)
+
+            except Exception as exc:
+                logger.warning("engagement_bot: error for %s: %s", hashtag, exc)
+                errors.append(str(exc))
+
+        return {
+            "replied_count": replied_count,
+            "skipped": skipped,
+            "error_count": len(errors),
+        }
+
+    async def _generate_engagement_reply(
+        self, tweet_text: str, username: str, telegram_link: str
+    ) -> Optional[str]:
+        """
+        Use Anthropic to generate a helpful reply to a deal/coupon tweet.
+
+        Returns a short (≤240 char) reply with a soft Telegram CTA, or None on failure.
+        """
+        anthropic_key = os.environ.get("ANTHROPIC_AUTH_TOKEN", "")
+        model = os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-6")
+        base_url = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+
+        cta_line = f" (we have a free daily deal group: {telegram_link})" if telegram_link else ""
+
+        if not anthropic_key:
+            # Fallback: generic helpful replies
+            fallbacks = [
+                f"@{username} nice find! there's usually a coupon code too — check before checkout{cta_line}",
+                f"@{username} this is legit, stacked ours with cashback too{cta_line}",
+                f"@{username} always check if there's a subscribe-and-save price too, often cheaper{cta_line}",
+            ]
+            return random.choice(fallbacks)[:240]
+
+        system = (
+            "You reply to tweets about deals, coupons, and saving money. "
+            "Be genuinely helpful — one sentence, conversational, friendly. "
+            "Optionally mention the free deal group softly at the end. "
+            "Sound like a real person, not a bot. Under 200 characters. "
+            "Return ONLY the reply text."
+        )
+        user = (
+            f"Reply helpfully to this tweet from @{username}:\n\n\"{tweet_text}\"\n\n"
+            f"Soft CTA to add if relevant: {cta_line}"
+        )
+
+        try:
+            headers = {
+                "x-api-key": anthropic_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            }
+            payload = {
+                "model": model,
+                "max_tokens": 80,
+                "system": system,
+                "messages": [{"role": "user", "content": user}],
+            }
+            async with httpx.AsyncClient(timeout=20.0, base_url=base_url) as client:
+                resp = await client.post("/v1/messages", headers=headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+            text = data["content"][0]["text"].strip().strip('"\'')
+            full = f"@{username} {text}"
+            return full[:240] if full else None
+        except Exception as exc:
+            logger.debug("engagement_bot reply generation failed: %s", exc)
+            return None
+
+    # ── Manual post export + Telegram DM ─────────────────────────────────────
+
+    async def _save_for_manual_post(
+        self,
+        tweet_text: str,
+        tweet_type: str = "deal",
+        hashtags: str = "",
+        thread_tweets: Optional[List[str]] = None,
+        extra_info: Optional[str] = None,
+    ) -> str:
+        """
+        Save tweet content to a .txt file and send a Telegram DM to the owner.
+
+        Used as a fallback whenever the Twitter API is unavailable/returns an error.
+        The operator can open the file, copy the text, and paste it into Twitter manually.
+
+        Args:
+            tweet_text:    The main tweet text.
+            tweet_type:    Label for the notification ("deal", "meme", "viral", "thread").
+            hashtags:      Optional hashtag string to append / display separately.
+            thread_tweets: For threads — list of all tweet texts in order.
+            extra_info:    Optional extra context line for the notification.
+
+        Returns:
+            Absolute path to the saved .txt file.
+        """
+        output_dir = Path("deal_sniper_ai/output/twitter")
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        filename = f"tweet_{timestamp}_{tweet_type}.txt"
+        file_path = output_dir / filename
+
+        # --- Build the text file content ---
+        try:
+            from zoneinfo import ZoneInfo
+            now_est = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d %I:%M %p EST")
+        except Exception:
+            now_est = timestamp
+
+        lines = [
+            f"Twitter Post Ready — {now_est}",
+            f"Type: {tweet_type}",
+            "-" * 60,
+        ]
+
+        if thread_tweets:
+            for i, t in enumerate(thread_tweets, 1):
+                lines += [f"Tweet {i}/{len(thread_tweets)}:", t, ""]
+        else:
+            lines += [tweet_text, ""]
+
+        if hashtags:
+            lines += ["-" * 60, "Hashtags:", hashtags]
+
+        if extra_info:
+            lines += ["", "Notes:", extra_info]
+
+        file_content = "\n".join(lines)
+        file_path.write_text(file_content, encoding="utf-8")
+        abs_path = str(file_path.resolve())
+        logger.info("Twitter manual post saved: %s", abs_path)
+
+        # --- Send Telegram DM to owner ---
+        bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+        owner_id = os.environ.get("TELEGRAM_OWNER_ID", "") or os.environ.get("TELEGRAM_CHANNEL_ID", "")
+
+        if bot_token and owner_id:
+            preview = tweet_text[:200] + ("..." if len(tweet_text) > 200 else "")
+            tg_message = (
+                "\U0001f426 <b>Twitter Post Ready!</b>\n\n"
+                f"<b>Type:</b> {tweet_type}\n"
+                f"<b>File:</b> <code>{abs_path}</code>\n\n"
+                "<b>Tweet text (copy this):</b>\n"
+                f"<code>{preview}</code>\n"
+            )
+            if hashtags:
+                tg_message += f"\n<b>Hashtags:</b>\n<code>{hashtags[:200]}</code>\n"
+            if thread_tweets and len(thread_tweets) > 1:
+                tg_message += f"\n<i>Thread: {len(thread_tweets)} tweets — see file for full text</i>\n"
+            tg_message += (
+                "\n<b>Upload steps:</b>\n"
+                "1. Open the file at the path above\n"
+                "2. Copy the tweet text\n"
+                "3. Paste into twitter.com or the X app\n"
+                "4. Add hashtags if shown\n"
+                "5. Post!"
+            )
+
+            try:
+                url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                payload = {
+                    "chat_id": owner_id,
+                    "text": tg_message,
+                    "parse_mode": "HTML",
+                }
+                async with httpx.AsyncClient(timeout=20.0) as client:
+                    resp = await client.post(url, data=payload)
+                    resp.raise_for_status()
+                    if resp.json().get("ok"):
+                        logger.info("Telegram DM sent for manual Twitter post")
+                    else:
+                        logger.warning("Telegram DM failed: %s", resp.json().get("description"))
+            except Exception as exc:
+                logger.warning("Could not send Telegram DM for Twitter manual post: %s", exc)
+        else:
+            logger.warning("TELEGRAM_BOT_TOKEN or TELEGRAM_OWNER_ID not set — skipping DM")
+
+        return abs_path
 
     async def close(self):
         """Close HTTP client."""

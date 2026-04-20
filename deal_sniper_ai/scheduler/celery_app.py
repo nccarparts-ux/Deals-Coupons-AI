@@ -250,6 +250,36 @@ app.conf.update(
             'args': (),
             'options': {'queue': 'growth'},
         },
+
+        # ── Viral funnel: meme tweet once per day at noon UTC ─────────────────
+        'post-meme-tweet': {
+            'task': 'deal_sniper_ai.posting_engine.tasks.post_meme_tweet_task',
+            'schedule': crontab(hour=12, minute=0),
+            'args': (),
+            'options': {'queue': 'posting'},
+        },
+
+        # ── Viral funnel: meme TikTok render twice per day ────────────────────
+        'render-meme-tiktok-am': {
+            'task': 'deal_sniper_ai.posting_engine.tasks.render_meme_tiktok_task',
+            'schedule': crontab(hour=10, minute=0),
+            'args': (),
+            'options': {'queue': 'posting'},
+        },
+        'render-meme-tiktok-pm': {
+            'task': 'deal_sniper_ai.posting_engine.tasks.render_meme_tiktok_task',
+            'schedule': crontab(hour=18, minute=0),
+            'args': (),
+            'options': {'queue': 'posting'},
+        },
+
+        # ── Viral funnel: Twitter engagement bot every 90 minutes ─────────────
+        'run-twitter-engagement-bot': {
+            'task': 'deal_sniper_ai.posting_engine.tasks.run_twitter_engagement_bot_task',
+            'schedule': 5400.0,  # 90 minutes
+            'args': (),
+            'options': {'queue': 'posting'},
+        },
     },
 
     # Timezone
