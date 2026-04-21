@@ -299,7 +299,7 @@
     footer p { color: #666; line-height: 1.7; }
 
     /* ---- Sticky social ---- */
-    .sticky-social { position: fixed; right: 14px; bottom: 90px; display: flex; flex-direction: column; gap: 8px; z-index: 90; }
+    .sticky-social { position: fixed; right: 14px; bottom: 90px; display: flex; flex-direction: column; gap: 8px; z-index: 99; }
     .sticky-social a {
       display: flex;
       align-items: center;
@@ -320,7 +320,7 @@
     .sticky-label { display: none; }
 
     @media (max-width: 640px) {
-      .sticky-social { right: 0; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); gap: 8px; }
+      .sticky-social { right: 0; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); gap: 8px; }
       .sticky-social a {
         width: auto;
         height: 40px;
