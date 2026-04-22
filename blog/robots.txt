@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://deals-coupons-ai.vercel.app/blog/blog/sitemap.xml
