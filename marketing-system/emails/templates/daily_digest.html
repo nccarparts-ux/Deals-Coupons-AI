@@ -1,26 +1,61 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Today's Top Deals</title></head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Today's Top Deals</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 16px">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%">
-  <tr><td style="background:#111114;padding:24px 32px">
+
+  <!-- Header -->
+  <tr><td style="background:#c0392b;padding:20px 32px;border-radius:8px 8px 0 0">
     <table width="100%" cellpadding="0" cellspacing="0"><tr>
-      <td><p style="margin:0;font-size:26px;font-weight:900;color:#FF5E1A;letter-spacing:2px">DEAL SNIPER</p></td>
-      <td align="right"><p style="margin:0;font-size:13px;color:#777">{DATE}</p></td>
+      <td><a href="{SITE_URL}" style="text-decoration:none;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px">BidYard Deals</a></td>
+      <td align="right"><p style="margin:0;font-size:12px;color:rgba(255,255,255,0.8)">{DATE}</p></td>
     </tr></table>
   </td></tr>
-  <tr><td style="background:#FF5E1A;padding:14px 32px;text-align:center">
-    <p style="margin:0;font-size:16px;font-weight:700;color:#fff">TODAY'S TOP AMAZON DEALS</p>
+
+  <!-- Subheader -->
+  <tr><td style="background:#a93226;padding:10px 32px;text-align:center">
+    <p style="margin:0;font-size:13px;font-weight:600;color:#fff;letter-spacing:0.04em">TODAY'S TOP AMAZON DEALS &mdash; HAND-PICKED FOR YOU</p>
   </td></tr>
-  <tr><td style="background:#ffffff;padding:28px 32px">
-    <table width="100%" cellpadding="0" cellspacing="0">{DEALS_HTML}</table>
-    <p style="margin:24px 0 0;text-align:center"><a href="{SITE_URL}" style="display:inline-block;background:#FF5E1A;color:#fff;padding:12px 28px;border-radius:4px;text-decoration:none;font-weight:700">See All Deals</a></p>
-    <hr style="border:none;border-top:1px solid #eee;margin:28px 0">
+
+  <!-- Body -->
+  <tr><td style="background:#ffffff;padding:28px 24px">
+
+    <p style="margin:0 0 20px;font-size:15px;color:#444;line-height:1.6">Here are today's best Amazon deals we found &mdash; all verified discounts, no fluff.</p>
+
+    {DEALS_HTML}
+
+    <!-- CTA -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px"><tr><td align="center">
+      <a href="{SITE_URL}" style="display:inline-block;background:#c0392b;color:#fff;padding:13px 32px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px">See All Deals &rarr;</a>
+    </td></tr></table>
+
+    <hr style="border:none;border-top:1px solid #f0f0f0;margin:28px 0">
     {REFERRAL_REMINDER}
+
+    <!-- Community -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px"><tr>
+      <td width="50%" style="padding-right:8px">
+        <a href="{TG_LINK}" style="display:block;background:#229ED9;color:#fff;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px">&#9992; Join Telegram</a>
+      </td>
+      <td width="50%" style="padding-left:8px">
+        <a href="{FB_LINK}" style="display:block;background:#1877F2;color:#fff;text-align:center;padding:10px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px">f Join Facebook</a>
+      </td>
+    </tr></table>
+
   </td></tr>
-  <tr><td style="background:#f4f4f4;padding:24px 32px;text-align:center">
-    <p style="margin:0 0 8px;font-size:12px;color:#999">Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
-    <p style="margin:0;font-size:12px;color:#999">123 Main St, Suite 100, City, ST 00000 &nbsp;|&nbsp; <a href="{UNSUBSCRIBE_URL}" style="color:#999">Unsubscribe</a></p>
+
+  <!-- Footer -->
+  <tr><td style="background:#f4f4f4;padding:20px 24px;text-align:center;border-radius:0 0 8px 8px">
+    <p style="margin:0 0 6px;font-size:12px;color:#999">Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
+    <p style="margin:0;font-size:12px;color:#bbb"><a href="{UNSUBSCRIBE_URL}" style="color:#bbb;text-decoration:underline">Unsubscribe</a></p>
   </td></tr>
+
 </table>
 </td></tr></table>
-</body></html>
+</body>
+</html>

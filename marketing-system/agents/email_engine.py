@@ -155,6 +155,50 @@ def _best_subject() -> str:
     return "Today's top Amazon deals"
 
 
+def _deal_card_html(d: dict) -> str:
+    image_url    = d.get("image_url") or ""
+    title        = (d.get("title") or "")[:70]
+    price        = d.get("price")
+    orig_price   = d.get("original_price")
+    discount_pct = d.get("discount_pct") or 0
+    amazon_url   = d.get("amazon_url") or "#"
+    slug         = d.get("slug") or ""
+    deal_page    = f"{SITE_URL}/deals/{slug}" if slug else amazon_url
+
+    img_block = (
+        f'<a href="{deal_page}" style="display:block;text-decoration:none">'
+        f'<img src="{image_url}" width="560" style="width:100%;max-height:220px;object-fit:contain;background:#f8f8f8;display:block;padding:12px" alt="{title}">'
+        f'</a>'
+    ) if image_url else (
+        f'<div style="height:140px;background:#f8f8f8"></div>'
+    )
+
+    was_block = (
+        f'<p style="margin:0 0 4px;font-size:13px;color:#999;text-decoration:line-through">Was ${float(orig_price):.2f}</p>'
+    ) if orig_price and orig_price != price else ""
+
+    badge = (
+        f'<span style="display:inline-block;background:#c0392b;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:3px;margin-bottom:14px">{discount_pct}% OFF</span>'
+    ) if discount_pct else ""
+
+    savings = (
+        f'<p style="margin:0 0 14px;font-size:13px;color:#27ae60;font-weight:600">You save ${float(orig_price) - float(price):.2f}</p>'
+    ) if orig_price and price and float(orig_price) > float(price) else ""
+
+    return (
+        f'<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;background:#fff;border:1px solid #e8e8e8;border-radius:8px;overflow:hidden">'
+        f'<tr><td style="padding:0">{img_block}</td></tr>'
+        f'<tr><td style="padding:16px 20px 20px">'
+        f'<p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#1a1a1a;line-height:1.4">{title}</p>'
+        f'<p style="margin:0 0 2px;font-size:26px;font-weight:800;color:#c0392b;line-height:1">${float(price):.2f}</p>'
+        f'{was_block}{badge}{savings}'
+        f'<a href="{amazon_url}" style="display:block;background:#c0392b;color:#fff;text-align:center;padding:13px 20px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px">Get This Deal on Amazon &rarr;</a>'
+        f'<p style="margin:8px 0 0;font-size:11px;color:#bbb;text-align:center">As an Amazon Associate we earn from qualifying purchases. #ad</p>'
+        f'</td></tr>'
+        f'</table>'
+    )
+
+
 def send_daily_digest() -> int:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     deals = sorted([d for d in supabase_select("deals") if (d.get("fetched_at") or "") >= cutoff],
@@ -163,30 +207,36 @@ def send_daily_digest() -> int:
         log.info("No deals for daily digest")
         return 0
 
-    deals_html = "".join(
-        f'<tr><td style="padding:8px"><img src="{d.get("image_url","")}" width="60" height="60"></td>'
-        f'<td style="padding:8px"><b>{d["title"][:60]}</b><br>'
-        f'<span style="color:#FF5E1A">${d.get("price","?")} ({d.get("discount_pct",0)}% off)</span></td>'
-        f'<td style="padding:8px"><a href="{d.get("amazon_url","#")}" style="background:#FF5E1A;color:#fff;padding:6px 12px;text-decoration:none;border-radius:3px">See Deal</a></td></tr>'
-        for d in deals
-    )
-    subject  = _best_subject()
-    date_str = datetime.now(timezone.utc).strftime("%B %d, %Y")
-    subs     = [s for s in supabase_select("subscribers") if s.get("confirmed") and not s.get("unsubscribed")]
-    sent     = 0
+    deals_html = "".join(_deal_card_html(d) for d in deals)
+    subject    = _best_subject()
+    date_str   = datetime.now(timezone.utc).strftime("%B %d, %Y")
+    subs       = [s for s in supabase_select("subscribers") if s.get("confirmed") and not s.get("unsubscribed")]
+    sent       = 0
     for sub in subs:
-        ref_reminder = f'<p style="font-size:13px;color:#888">Share your link and earn: <a href="{SITE_URL}/ref/{sub.get("referral_code","")}" style="color:#FF5E1A">{SITE_URL}/ref/{sub.get("referral_code","")}</a></p>'
+        ref_link = f"{SITE_URL}/ref/{sub.get('referral_code','')}"
+        ref_reminder = (
+            f'<p style="font-size:13px;color:#888;text-align:center">Know someone who loves deals? '
+            f'<a href="{ref_link}" style="color:#c0392b;font-weight:600">Share your referral link</a></p>'
+        )
         html = _render("daily_digest.html", {
-            "{DEALS_HTML}": deals_html,
-            "{DATE}": date_str,
+            "{DEALS_HTML}":        deals_html,
+            "{DATE}":              date_str,
             "{REFERRAL_REMINDER}": ref_reminder,
-            "{UNSUBSCRIBE_URL}": _unsub_url(sub["email"]),
-            "{SITE_URL}": SITE_URL,
+            "{UNSUBSCRIBE_URL}":   _unsub_url(sub["email"]),
+            "{SITE_URL}":          SITE_URL,
+            "{TG_LINK}":           TG_LINK,
+            "{FB_LINK}":           FB_LINK,
         })
         if _send(sub["email"], sub.get("first_name", ""), subject, html, "daily_digest", sub.get("id")):
             sent += 1
     log.info("Daily digest sent to %d subscribers", sent)
     return sent
+
+
+def send_test_blast() -> int:
+    """Send the daily digest immediately to all confirmed subscribers (test use)."""
+    log.info("Sending test blast digest...")
+    return send_daily_digest()
 
 
 def send_weekly_top10() -> int:
