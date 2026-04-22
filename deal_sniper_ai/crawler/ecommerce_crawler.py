@@ -7,6 +7,7 @@ with anti-blocking measures and intelligent product discovery.
 """
 
 import asyncio
+import json
 import random
 import time
 import logging
@@ -23,6 +24,30 @@ from deal_sniper_ai.crawler.anti_blocking import (
     AntiBlockingManager, create_anti_blocking_manager,
     get_browser_context_options, handle_crawler_response
 )
+
+try:
+    from playwright_stealth import Stealth as _Stealth
+    _stealth = _Stealth()
+    _STEALTH_AVAILABLE = True
+except ImportError:
+    _STEALTH_AVAILABLE = False
+
+try:
+    import redis as _redis
+    _redis_client = _redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+    _redis_client.ping()
+    _REDIS_AVAILABLE = True
+except Exception:
+    _REDIS_AVAILABLE = False
+
+_VIEWPORTS = [
+    {"width": 1366, "height": 768},
+    {"width": 1440, "height": 900},
+    {"width": 1536, "height": 864},
+    {"width": 1920, "height": 1080},
+    {"width": 1280, "height": 800},
+    {"width": 1600, "height": 900},
+]
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -306,9 +331,15 @@ class EcommerceCrawler:
 
             # Get browser context options from anti-blocking manager
             context_options = {
-                "viewport": {"width": 1920, "height": 1080},
+                "viewport": random.choice(_VIEWPORTS),
                 "locale": "en-US",
                 "timezone_id": "America/New_York",
+            }
+            context_options["extra_http_headers"] = {
+                "Referer": "https://www.google.com/",
+                "sec-ch-ua": '"Chromium";v="135", "Google Chrome";v="135", "Not-A.Brand";v="8"',
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": '"Windows"',
             }
 
             if self.anti_blocking:
@@ -325,8 +356,11 @@ class EcommerceCrawler:
 
             browser = await p.chromium.launch(**launch_options)
             context = await browser.new_context(**context_options)
+            await self._restore_cookies(context)
 
             page = await context.new_page()
+            if _STEALTH_AVAILABLE:
+                await _stealth.apply_stealth_async(page)
 
             try:
                 for page_num in range(1, self.config.max_pages_per_search + 1):
@@ -354,6 +388,8 @@ class EcommerceCrawler:
                         if not await self._handle_blocking(response, page):
                             logger.error(f"Blocked on search page {page_num}")
                             break
+
+                        await self._simulate_human_behavior(page)
 
                         # For Amazon, extract all product data directly from search cards
                         # (avoids individual page visits which trigger bot detection)
@@ -393,6 +429,7 @@ class EcommerceCrawler:
                         continue
 
             finally:
+                await self._save_cookies(context)
                 await browser.close()
 
         logger.info(f"Crawling complete for query '{query}'. Found {len(products)} products.")
@@ -403,6 +440,8 @@ class EcommerceCrawler:
         logger.info(f"Crawling product page: {url}")
 
         page = await context.new_page()
+        if _STEALTH_AVAILABLE:
+            await _stealth.apply_stealth_async(page)
         self.stats["total_requests"] += 1
 
         try:
@@ -412,6 +451,8 @@ class EcommerceCrawler:
 
             if not await self._handle_blocking(response, page):
                 return None
+
+            await self._simulate_human_behavior(page)
 
             # Extract product data using retailer-specific selectors
             product_data = await self._extract_product_data(page, url)
@@ -528,11 +569,16 @@ class EcommerceCrawler:
                         if orig_candidates:
                             original_price = max(orig_candidates)
 
-                    # Image
+                    # Image — try src, data-src, srcset in order; skip Amazon's lazy-load placeholder
                     img_el = card.locator('.s-image')
                     image_url = None
                     if await img_el.count() > 0:
-                        image_url = await img_el.first.get_attribute('src')
+                        for attr in ('src', 'data-src', 'data-old-hires', 'srcset'):
+                            val = await img_el.first.get_attribute(attr)
+                            if val and 'grey-pixel' not in val and 'blank.gif' not in val:
+                                # srcset may be "url 1x, url2 2x" — take first URL
+                                image_url = val.split()[0].rstrip(',')
+                                break
 
                     # Only include products with a valid title and prices
                     if not title or not current_price:
@@ -820,13 +866,62 @@ class EcommerceCrawler:
 
         return False
 
+    async def _simulate_human_behavior(self, page):
+        """Simulate human scroll and mouse movement to avoid bot detection."""
+        try:
+            scroll_y = random.randint(300, 1200)
+            await page.evaluate(f"window.scrollTo({{top: {scroll_y}, behavior: 'smooth'}})")
+            await asyncio.sleep(random.uniform(0.8, 2.0))
+            await page.mouse.move(
+                random.randint(100, 1200),
+                random.randint(100, 600)
+            )
+            await asyncio.sleep(random.uniform(0.3, 0.8))
+        except Exception:
+            pass
+
+    async def _restore_cookies(self, context):
+        """Restore Amazon session cookies from Redis if available."""
+        if not _REDIS_AVAILABLE:
+            return
+        try:
+            raw = _redis_client.get(f"crawler_cookies:{self.retailer_id}")
+            if raw:
+                cookies = json.loads(raw)
+                await context.add_cookies(cookies)
+                logger.debug(f"Restored {len(cookies)} cookies for {self.retailer_id}")
+        except Exception as e:
+            logger.debug(f"Cookie restore failed: {e}")
+
+    async def _save_cookies(self, context):
+        """Save current cookies to Redis for next run."""
+        if not _REDIS_AVAILABLE:
+            return
+        try:
+            cookies = await context.cookies()
+            if cookies:
+                _redis_client.setex(
+                    f"crawler_cookies:{self.retailer_id}",
+                    6 * 3600,  # 6 hour TTL
+                    json.dumps(cookies)
+                )
+                logger.debug(f"Saved {len(cookies)} cookies for {self.retailer_id}")
+        except Exception as e:
+            logger.debug(f"Cookie save failed: {e}")
+
     async def crawl_popular_categories(self) -> Dict[str, List[ProductData]]:
         """Crawl popular categories for the retailer."""
         results = {}
-        for category in self.config.categories[:3]:  # Limit to 3 categories
+        categories = self.config.categories[:3]  # Limit to 3 categories
+        for idx, category in enumerate(categories):
             logger.info(f"Crawling category: {category}")
             products = await self.crawl_search_results(category, category)
             results[category] = products
+            # Pause between categories (skip after the last one)
+            if idx < len(categories) - 1:
+                pause = random.uniform(15, 45)
+                logger.debug(f"Inter-category pause: {pause:.1f}s")
+                await asyncio.sleep(pause)
         return results
 
     async def crawl_product(self, url: str) -> Optional[Dict[str, Any]]:
@@ -856,9 +951,15 @@ class EcommerceCrawler:
 
             # Get browser context options from anti-blocking manager
             context_options = {
-                "viewport": {"width": 1920, "height": 1080},
+                "viewport": random.choice(_VIEWPORTS),
                 "locale": "en-US",
                 "timezone_id": "America/New_York",
+            }
+            context_options["extra_http_headers"] = {
+                "Referer": "https://www.google.com/",
+                "sec-ch-ua": '"Chromium";v="135", "Google Chrome";v="135", "Not-A.Brand";v="8"',
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": '"Windows"',
             }
 
             if self.anti_blocking:
@@ -875,6 +976,7 @@ class EcommerceCrawler:
 
             browser = await p.chromium.launch(**launch_options)
             context = await browser.new_context(**context_options)
+            await self._restore_cookies(context)
 
             try:
                 product_data = await self.crawl_product_page(url, context)
@@ -892,6 +994,7 @@ class EcommerceCrawler:
                     }
                 return None
             finally:
+                await self._save_cookies(context)
                 await browser.close()
 
     async def close(self):
