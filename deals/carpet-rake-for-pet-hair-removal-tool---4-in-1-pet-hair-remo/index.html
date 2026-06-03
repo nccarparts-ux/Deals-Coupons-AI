@@ -199,7 +199,12 @@
     }
   </style>
 </head>
-<body>
+<body data-fetched="2026-04-22T19:42:10.263741+00:00">
+
+<div id="expiredBanner" style="display:none;background:#f39c12;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;line-height:1.5;">
+  This deal was posted more than 7 days ago &mdash; the price may have changed.
+  <a href="https://www.amazon.com/dp/B0FK9LPBN5?tag=bidyarddeal09-20" target="_blank" rel="noopener nofollow sponsored" style="color:#fff;text-decoration:underline;margin-left:6px;">Check current price on Amazon &rarr;</a>
+</div>
 
 <div class="alert-bar">
   FREE DEAL ALERTS &mdash; <a href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener">Join our Telegram for instant notifications</a>
@@ -326,6 +331,16 @@
 </div>
 
 <script>
+(function() {
+  var fetched = document.body.getAttribute('data-fetched');
+  if (fetched) {
+    var ms = Date.now() - new Date(fetched).getTime();
+    if (ms > 7 * 24 * 60 * 60 * 1000) {
+      document.getElementById('expiredBanner').style.display = 'block';
+    }
+  }
+})();
+
 document.querySelectorAll('.faq-q').forEach(function(q) {
   q.addEventListener('click', function() {
     var a = this.nextElementSibling;

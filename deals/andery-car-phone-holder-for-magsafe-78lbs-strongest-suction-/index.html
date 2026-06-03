@@ -211,7 +211,12 @@
     }
   </style>
 </head>
-<body>
+<body data-fetched="2026-04-23T00:40:55.78312+00:00">
+
+<div id="expiredBanner" style="display:none;background:#f39c12;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;line-height:1.5;">
+  This deal was posted more than 7 days ago &mdash; the price may have changed.
+  <a href="https://www.amazon.com/Magsafe-Strongest-Suction-Magnetic-Adjustable/dp/B0DN1S1YLV/ref=sr_1_21_mod_primary_new?dib=eyJ2IjoiMSJ9.72jDcy8iflbwly4CpAz7MS6q0AxfsggROpyB-xxwpOx7lla9Bv77wB8SjwEXH_tEcgJrckxuKcX_2RPMy3k39n-E1gCUmABd7JUJ55tql7Wz1XWSn6xnUlMf4olpAk9628P3ZUR3SWnFYPZZXG33OcJqG4-Z6rjJvIhtQUS-sgm8-9h8MqFc8sSfohczrwVXE731AKvqTqkyqS_q9ut7TpNNbHzF2r9_r5n3FFYG_bs.e87UBntxWVVhFpDL6U8xHat27wXo-CoJROBw7tFneDw&dib_tag=se&keywords=electronics&qid=1774121909&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sr=8-21" target="_blank" rel="noopener nofollow sponsored" style="color:#fff;text-decoration:underline;margin-left:6px;">Check current price on Amazon &rarr;</a>
+</div>
 
 <div class="alert-bar">
   FREE DEAL ALERTS &mdash; <a href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener">Join our Telegram for instant notifications</a>
@@ -348,6 +353,16 @@
 </div>
 
 <script>
+(function() {
+  var fetched = document.body.getAttribute('data-fetched');
+  if (fetched) {
+    var ms = Date.now() - new Date(fetched).getTime();
+    if (ms > 7 * 24 * 60 * 60 * 1000) {
+      document.getElementById('expiredBanner').style.display = 'block';
+    }
+  }
+})();
+
 document.querySelectorAll('.faq-q').forEach(function(q) {
   q.addEventListener('click', function() {
     var a = this.nextElementSibling;
