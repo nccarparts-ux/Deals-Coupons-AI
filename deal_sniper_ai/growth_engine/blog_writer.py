@@ -592,10 +592,13 @@ def save_blog_post(
 </head>
 <body>
   <header class="site-header">
-    <a href="/blog/" class="logo">&#127919; Deal Sniper AI</a>
+    <a class="nav-brand" href="/">BidYard Deals</a>
     <nav>
-      <a href="/">Home</a>
-      <a href="/blog/">Blog</a>
+      <a href="/top-deals">Top Deals</a>
+      <a href="/about">About</a>
+      <a href="/blog">Blog</a>
+      <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
+      <a href="https://www.facebook.com/groups/826906386379276" class="nav-fb" target="_blank" rel="noopener">Join Facebook</a>
     </nav>
   </header>
 
@@ -716,10 +719,13 @@ def _rebuild_index() -> None:
 </head>
 <body>
   <header class="site-header">
-    <a href="/blog/" class="logo">&#127919; Deal Sniper AI</a>
+    <a class="nav-brand" href="/">BidYard Deals</a>
     <nav>
-      <a href="/">Home</a>
-      <a href="/blog/">Blog</a>
+      <a href="/top-deals">Top Deals</a>
+      <a href="/about">About</a>
+      <a href="/blog">Blog</a>
+      <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
+      <a href="https://www.facebook.com/groups/826906386379276" class="nav-fb" target="_blank" rel="noopener">Join Facebook</a>
     </nav>
   </header>
 

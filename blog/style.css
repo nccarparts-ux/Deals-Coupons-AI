@@ -29,25 +29,41 @@ body {
 /* ── Header ─────────────────────────────────────────────────────────────── */
 .site-header {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(15, 17, 23, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  padding: .9rem 2rem;
-  display: flex; align-items: center; justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0 32px;
+  display: flex; align-items: center; gap: 20px;
+  height: 56px;
 }
 
-.site-header .logo {
-  font-size: 1.15rem; font-weight: 700;
-  color: var(--accent-light); text-decoration: none;
-  display: flex; align-items: center; gap: .5rem;
+.site-header .nav-brand {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; font-size: 22px;
+  color: #c0392b; text-decoration: none;
+  letter-spacing: -.5px; flex-shrink: 0;
 }
 
-.site-header nav { display: flex; gap: 1.5rem; }
+.site-header nav { display: flex; gap: 20px; align-items: center; flex: 1; }
 .site-header nav a {
-  color: var(--muted); text-decoration: none;
-  font-size: .9rem; font-weight: 500; transition: color .15s;
+  color: #444; text-decoration: none;
+  font-size: 14px; font-weight: 500; transition: color .15s;
 }
-.site-header nav a:hover { color: var(--text); }
+.site-header nav a:hover { color: #c0392b; }
+
+.site-header .nav-tg {
+  margin-left: auto;
+  background: #c0392b !important; color: #fff !important;
+  padding: 8px 16px; border-radius: 4px;
+  font-weight: 700; font-size: 13px;
+}
+.site-header .nav-tg:hover { background: #a93226 !important; }
+
+.site-header .nav-fb {
+  background: #1877F2 !important; color: #fff !important;
+  padding: 8px 16px; border-radius: 4px;
+  font-weight: 700; font-size: 13px;
+}
+.site-header .nav-fb:hover { background: #145dbf !important; }
 
 /* ── Hero ────────────────────────────────────────────────────────────────── */
 .hero {
