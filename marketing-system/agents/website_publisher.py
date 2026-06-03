@@ -30,9 +30,13 @@ MARKETING_DIR = Path(__file__).parent.parent
 REPO_ROOT     = MARKETING_DIR.parent
 TEMPLATES_DIR = MARKETING_DIR / "website" / "templates"
 DEALS_DIR     = REPO_ROOT / "deals"          # /deals/{slug}/index.html
-DEALS_JSON    = REPO_ROOT / "deals.json"     # served at /deals.json
+DEALS_JSON    = REPO_ROOT / "deals.json"     # served at /deals.json (first page only)
 SITEMAP_PATH  = REPO_ROOT / "sitemap.xml"
 PUBLIC_MIRROR = MARKETING_DIR / "website" / "public"
+
+# Pagination config
+PAGE_SIZE = 24   # deals per page (homepage only shows 8/section, so 24 is enough for it)
+MAX_DEALS = 300  # total deals kept across all paginated files
 
 # ── Config ────────────────────────────────────────────────────────────────────
 GROUP_NAME      = os.environ.get("GROUP_NAME", "Coupons, Deals & Steals")
@@ -129,18 +133,40 @@ def _write_page(slug: str, html: str) -> Path:
 def _rebuild_deals_json() -> None:
     fields = ["id", "title", "price", "original_price", "discount_pct",
               "amazon_url", "image_url", "category", "slug", "fetched_at"]
-    all_deals = sorted(
+    all_deals_raw = sorted(
         supabase_select("deals"),
         key=lambda d: d.get("fetched_at") or "",
         reverse=True,
-    )[:50]
-    data = [{f: d.get(f) for f in fields} for d in all_deals]
-    payload = json.dumps(data, default=str, ensure_ascii=False)
+    )
+    all_rows = [{f: d.get(f) for f in fields} for d in all_deals_raw[:MAX_DEALS]]
+
+    # deals.json = first PAGE_SIZE deals only — keeps homepage payload tiny
+    page_one = all_rows[:PAGE_SIZE]
+    payload = json.dumps(page_one, default=str, ensure_ascii=False)
     DEALS_JSON.write_text(payload, encoding="utf-8")
     # Mirror into marketing-system/website/public/
     PUBLIC_MIRROR.mkdir(parents=True, exist_ok=True)
     (PUBLIC_MIRROR / "deals.json").write_text(payload, encoding="utf-8")
-    log.info("deals.json rebuilt (%d deals)", len(data))
+    log.info("deals.json rebuilt (%d deals, %d total available)", len(page_one), len(all_rows))
+
+    # Paginated JSON files for top-deals page
+    _rebuild_paginated_json(all_rows)
+
+
+def _rebuild_paginated_json(all_rows: list) -> None:
+    """Write deals/page-N.json and deals/pages.json for the top-deals pagination UI."""
+    total = len(all_rows)
+    total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
+
+    for page_num in range(1, total_pages + 1):
+        start = (page_num - 1) * PAGE_SIZE
+        chunk = all_rows[start:start + PAGE_SIZE]
+        out = DEALS_DIR / f"page-{page_num}.json"
+        out.write_text(json.dumps(chunk, default=str, ensure_ascii=False), encoding="utf-8")
+
+    meta = {"total_deals": total, "per_page": PAGE_SIZE, "total_pages": total_pages}
+    (DEALS_DIR / "pages.json").write_text(json.dumps(meta), encoding="utf-8")
+    log.info("Paginated JSON: %d deals across %d pages (%d per page)", total, total_pages, PAGE_SIZE)
 
 
 # ── Rebuild sitemap.xml ───────────────────────────────────────────────────────

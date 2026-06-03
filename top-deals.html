@@ -545,6 +545,15 @@
     <div class="loading">Loading deals&hellip;</div>
   </div>
 
+  <div id="loadMoreWrap" style="display:none;text-align:center;padding:32px 0 8px;">
+    <button id="loadMoreBtn" onclick="loadNextPage()"
+      style="background:#c0392b;color:#fff;border:none;border-radius:4px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;"
+      onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      Load More Deals
+    </button>
+    <div id="loadMoreCount" style="margin-top:10px;font-size:12px;color:#999;"></div>
+  </div>
+
   <div class="cta-section">
     <h2>Never Miss a Deal</h2>
     <p>Join our free Telegram for instant alerts on the biggest Amazon discounts.</p>
@@ -565,6 +574,9 @@
 var allDeals = [];
 var activeCat = 'all';
 var cats = new Set(['all']);
+var currentPage = 0;
+var totalPages = 1;
+var isLoading = false;
 
 function cardHtml(d) {
   var dealPage = '/deals/'+(d.slug||'');
@@ -590,7 +602,7 @@ function cardHtml(d) {
 function sortDeals(deals, mode) {
   var arr = deals.slice();
   if (mode === 'discount') arr.sort(function(a,b){ return (b.discount_pct||0)-(a.discount_pct||0); });
-  else if (mode === 'newest') { /* keep original order */ }
+  else if (mode === 'newest') { /* keep original order — newest first from publisher */ }
   else if (mode === 'price_asc') arr.sort(function(a,b){ return (a.price||0)-(b.price||0); });
   else if (mode === 'price_desc') arr.sort(function(a,b){ return (b.price||0)-(a.price||0); });
   else if (mode === 'savings') arr.sort(function(a,b){ return ((b.original_price||0)-(b.price||0))-((a.original_price||0)-(a.price||0)); });
@@ -616,23 +628,81 @@ function filterDeals(cat, btn) {
   applySort();
 }
 
-fetch('/deals.json').then(function(r){return r.json();}).then(function(deals){
-  allDeals = deals; // original order = newest first from publisher
-  deals.forEach(function(d){if(d.category) cats.add(d.category);});
+function updateCategoryButtons() {
   var bar = document.getElementById('filterBar');
-  cats.forEach(function(c){
-    if(c==='all') return;
+  cats.forEach(function(c) {
+    if (c === 'all') return;
+    if (bar.querySelector('[data-cat="' + c + '"]')) return;
     var btn = document.createElement('button');
     btn.className = 'filter-btn';
     btn.dataset.cat = c;
-    btn.textContent = c.charAt(0).toUpperCase()+c.slice(1);
-    btn.onclick = function(){filterDeals(c,this);};
+    btn.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+    btn.onclick = function() { filterDeals(c, this); };
     bar.appendChild(btn);
   });
-  applySort();
-}).catch(function(){
-  document.getElementById('dealsGrid').innerHTML = '<div class="loading">Could not load deals.</div>';
-});
+}
+
+function setLoadMore(show, text, disabled) {
+  var wrap = document.getElementById('loadMoreWrap');
+  var btn  = document.getElementById('loadMoreBtn');
+  var info = document.getElementById('loadMoreCount');
+  wrap.style.display = show ? 'block' : 'none';
+  btn.textContent = text;
+  btn.disabled = disabled;
+  btn.style.opacity = disabled ? '.6' : '1';
+  btn.style.cursor  = disabled ? 'default' : 'pointer';
+  info.textContent = show ? 'Showing ' + allDeals.length + ' of ' + (totalPages * 24) + ' deals' : '';
+}
+
+function loadNextPage() {
+  if (isLoading || currentPage >= totalPages) return;
+  isLoading = true;
+  setLoadMore(true, 'Loading...', true);
+  fetch('/deals/page-' + (currentPage + 1) + '.json')
+    .then(function(r) { return r.json(); })
+    .then(function(deals) {
+      currentPage++;
+      deals.forEach(function(d) {
+        allDeals.push(d);
+        if (d.category) cats.add(d.category);
+      });
+      updateCategoryButtons();
+      applySort();
+      isLoading = false;
+      if (currentPage >= totalPages) {
+        setLoadMore(false, '', false);
+      } else {
+        setLoadMore(true, 'Load More Deals', false);
+      }
+    })
+    .catch(function() {
+      isLoading = false;
+      setLoadMore(currentPage < totalPages, 'Load More Deals', false);
+    });
+}
+
+// Init: read page metadata then load first page
+fetch('/deals/pages.json')
+  .then(function(r) { return r.json(); })
+  .then(function(meta) {
+    totalPages = meta.total_pages || 1;
+    loadNextPage();
+  })
+  .catch(function() {
+    // Fallback to deals.json if paginated files not yet generated
+    fetch('/deals.json')
+      .then(function(r) { return r.json(); })
+      .then(function(deals) {
+        allDeals = deals;
+        deals.forEach(function(d) { if (d.category) cats.add(d.category); });
+        updateCategoryButtons();
+        applySort();
+        setLoadMore(false, '', false);
+      })
+      .catch(function() {
+        document.getElementById('dealsGrid').innerHTML = '<div class="loading">Could not load deals.</div>';
+      });
+  });
 </script>
 
 <div class="sticky-social" aria-label="Social channels">
