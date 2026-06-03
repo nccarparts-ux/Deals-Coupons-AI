@@ -570,7 +570,7 @@ def save_blog_post(
   <meta name="description" content="{description}">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="{canonical}">
-  <link rel="stylesheet" href="/blog/style.css">
+  <link rel="stylesheet" href="/blog/style.css?v=3">
   <link rel="sitemap" type="application/xml" href="{blog_base_url}/blog/sitemap.xml">
 
   <!-- Open Graph -->
@@ -702,7 +702,7 @@ def _rebuild_index() -> None:
   <meta name="description" content="AI-curated deal roundups and buying guides. The best discounts on electronics, gaming, home, kitchen, and more &mdash; updated every few hours.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="{blog_base_url}/blog/">
-  <link rel="stylesheet" href="/blog/style.css">
+  <link rel="stylesheet" href="/blog/style.css?v=3">
   <link rel="sitemap" type="application/xml" href="{blog_base_url}/blog/sitemap.xml">
 
   <meta property="og:type" content="website">
