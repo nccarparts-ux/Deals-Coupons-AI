@@ -13,7 +13,7 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import requests
@@ -35,8 +35,9 @@ SITEMAP_PATH  = REPO_ROOT / "sitemap.xml"
 PUBLIC_MIRROR = MARKETING_DIR / "website" / "public"
 
 # Pagination config
-PAGE_SIZE = 24   # deals per page (homepage only shows 8/section, so 24 is enough for it)
-MAX_DEALS = 300  # total deals kept across all paginated files
+PAGE_SIZE       = 24  # deals per paginated page on top-deals
+HOMEPAGE_DEALS  = 50  # deals written to deals.json (homepage feed)
+MAX_DEAL_AGE_DAYS = 30  # only include deals fetched within this many days
 
 # ── Config ────────────────────────────────────────────────────────────────────
 GROUP_NAME      = os.environ.get("GROUP_NAME", "Coupons, Deals & Steals")
@@ -133,21 +134,22 @@ def _write_page(slug: str, html: str) -> Path:
 def _rebuild_deals_json() -> None:
     fields = ["id", "title", "price", "original_price", "discount_pct",
               "amazon_url", "image_url", "category", "slug", "fetched_at"]
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=MAX_DEAL_AGE_DAYS)).isoformat()
     all_deals_raw = sorted(
-        supabase_select("deals"),
+        [d for d in supabase_select("deals") if (d.get("fetched_at") or "") >= cutoff],
         key=lambda d: d.get("fetched_at") or "",
         reverse=True,
     )
-    all_rows = [{f: d.get(f) for f in fields} for d in all_deals_raw[:MAX_DEALS]]
+    all_rows = [{f: d.get(f) for f in fields} for d in all_deals_raw]
 
-    # deals.json = first PAGE_SIZE deals only — keeps homepage payload tiny
-    page_one = all_rows[:PAGE_SIZE]
+    # deals.json = most recent HOMEPAGE_DEALS only — keeps homepage payload tiny
+    page_one = all_rows[:HOMEPAGE_DEALS]
     payload = json.dumps(page_one, default=str, ensure_ascii=False)
     DEALS_JSON.write_text(payload, encoding="utf-8")
     # Mirror into marketing-system/website/public/
     PUBLIC_MIRROR.mkdir(parents=True, exist_ok=True)
     (PUBLIC_MIRROR / "deals.json").write_text(payload, encoding="utf-8")
-    log.info("deals.json rebuilt (%d deals, %d total available)", len(page_one), len(all_rows))
+    log.info("deals.json rebuilt (%d deals, %d total within %d days)", len(page_one), len(all_rows), MAX_DEAL_AGE_DAYS)
 
     # Paginated JSON files for top-deals page
     _rebuild_paginated_json(all_rows)
