@@ -15,6 +15,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Any
 from urllib.parse import urljoin, urlparse, parse_qs
 
+import re as _re_hdr
 import yaml
 from pathlib import Path
 from playwright.async_api import async_playwright, Browser, Page, Response
@@ -39,6 +40,46 @@ try:
     _REDIS_AVAILABLE = True
 except Exception:
     _REDIS_AVAILABLE = False
+
+def _build_request_headers(ua: str) -> dict:
+    """Build extra HTTP headers that are consistent with the given user-agent string.
+
+    Chrome/Edge send sec-ch-ua client hints; Firefox and Safari do NOT.
+    Sending these hints with a non-Chromium UA is a strong bot-detection signal.
+    """
+    headers: dict = {"Referer": "https://www.google.com/"}
+    if not ua:
+        return headers
+
+    is_edge = "Edg/" in ua
+    # Chromium-based: Chrome or Edge (Edg/ token always accompanied by Chrome/ token)
+    is_chromium = "Chrome/" in ua
+
+    if is_chromium:
+        m = _re_hdr.search(r'Chrome/(\d+)', ua)
+        v = m.group(1) if m else "135"
+
+        if "Macintosh" in ua or "Mac OS" in ua:
+            platform = '"macOS"'
+        elif "Linux" in ua and "Android" not in ua:
+            platform = '"Linux"'
+        else:
+            platform = '"Windows"'
+
+        mobile = "?1" if "Mobile" in ua else "?0"
+
+        if is_edge:
+            brand = f'"Microsoft Edge";v="{v}", "Chromium";v="{v}", "Not-A.Brand";v="8"'
+        else:
+            brand = f'"Google Chrome";v="{v}", "Chromium";v="{v}", "Not-A.Brand";v="8"'
+
+        headers["sec-ch-ua"] = brand
+        headers["sec-ch-ua-mobile"] = mobile
+        headers["sec-ch-ua-platform"] = platform
+    # Firefox / Safari / others: no sec-ch-ua headers (they don't send them)
+
+    return headers
+
 
 _VIEWPORTS = [
     {"width": 1366, "height": 768},
@@ -236,27 +277,49 @@ class EcommerceCrawler:
                 coupon_available=product_data.coupon_available,
                 image_url=product_data.image_url,
             )
-        except Exception as e:
-            logger.warning(f"Deal check/post failed for {product_data.title[:40]}: {e}")
+        except Exception:
+            logger.exception(f"Deal check/post failed for {product_data.title[:40]}")
 
     async def _detect_captcha(self, page: Page) -> bool:
-        """Detect if CAPTCHA is present on the page."""
-        # Common CAPTCHA indicators
-        captcha_selectors = [
-            "#captcha",
-            ".g-recaptcha",
-            "iframe[src*='captcha']",
-            "div[class*='captcha']",
-            "h1:has-text('captcha')",
-            "text=robot",
-            "text=verify you are human"
-        ]
+        """Detect if CAPTCHA or Amazon block page is present."""
+        url = page.url
 
-        for selector in captcha_selectors:
-            if await page.locator(selector).count() > 0:
+        # URL-based detection — Amazon redirects to these on hard blocks
+        if any(p in url for p in ('validateCaptcha', '/errors/', 'ap/captcha')):
+            self.stats["captcha_encounters"] += 1
+            logger.warning(f"Amazon block URL detected: {url}")
+            return True
+
+        # Page title check — fastest signal, no DOM traversal needed
+        try:
+            title = await page.title()
+            if any(t in title for t in ('Robot Check', 'CAPTCHA', 'Sorry!', '503')):
                 self.stats["captcha_encounters"] += 1
-                logger.warning(f"CAPTCHA detected on {page.url}")
+                logger.warning(f"Amazon block page title: '{title}' on {url}")
                 return True
+        except Exception:
+            pass
+
+        # Content-based checks (covers 200-OK soft-block pages)
+        block_phrases = [
+            "verify you are human",
+            "not a robot",
+            "enter the characters you see",
+            "to discuss automated access",
+            "unusual traffic",
+            "g-recaptcha",
+            "h-captcha",
+            "cf-chl-widget",
+        ]
+        try:
+            content = (await page.content()).lower()
+            for phrase in block_phrases:
+                if phrase in content:
+                    self.stats["captcha_encounters"] += 1
+                    logger.warning(f"Block phrase '{phrase}' detected on {url}")
+                    return True
+        except Exception:
+            pass
 
         return False
 
@@ -279,20 +342,26 @@ class EcommerceCrawler:
 
         # Use anti-blocking system if available
         if self.anti_blocking:
+            # Always run our richer CAPTCHA/block detection first —
+            # Amazon returns 200 on block pages so status-code checks miss them.
+            if await self._detect_captcha(page):
+                self.stats["blocked_requests"] += 1
+                await self.anti_blocking.record_request_result(
+                    success=False, was_blocked=False, had_captcha=True
+                )
+                return False
+
             start_time = time.time()
             success = await handle_crawler_response(
                 self.anti_blocking, response, page_content, url
             )
 
-            # Update local stats for backward compatibility
             if success:
                 self.stats["successful_requests"] += 1
             else:
-                # Check what type of failure
                 status = response.status
                 if status in [403, 429, 503]:
                     self.stats["blocked_requests"] += 1
-                # CAPTCHA detection is handled by anti-blocking system
 
             return success
         else:
@@ -335,12 +404,6 @@ class EcommerceCrawler:
                 "locale": "en-US",
                 "timezone_id": "America/New_York",
             }
-            context_options["extra_http_headers"] = {
-                "Referer": "https://www.google.com/",
-                "sec-ch-ua": '"Chromium";v="135", "Google Chrome";v="135", "Not-A.Brand";v="8"',
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": '"Windows"',
-            }
 
             if self.anti_blocking:
                 anti_blocking_options = await get_browser_context_options(self.anti_blocking)
@@ -353,6 +416,12 @@ class EcommerceCrawler:
                 # Fallback to old proxy logic (simplified)
                 logger.warning("Using fallback proxy logic - anti-blocking not initialized")
                 # Note: Old proxy logic would go here, but it was empty
+
+            # Build headers consistent with the selected user agent (must come after
+            # anti_blocking_options are applied so we know the actual UA string)
+            context_options["extra_http_headers"] = _build_request_headers(
+                context_options.get("user_agent", "")
+            )
 
             browser = await p.chromium.launch(**launch_options)
             context = await browser.new_context(**context_options)
@@ -506,8 +575,15 @@ class EcommerceCrawler:
         products = []
         import re as _re
 
+        # Per-unit price indicators used in multiple guards below
+        _UNIT_INDICATORS = ('/oz', '/fl oz', '/count', '/ct', '/ea', '/lb', '/kg', '/g ', '/ml', '/liter', '/piece', '/item')
+
         def _parse_price_str(s: Optional[str]) -> Optional[float]:
             if not s:
+                return None
+            # Per-unit prices include "/" in their text (e.g., "$0.44/fl oz",
+            # "$13.90/oz", "$1.49/count") — reject them outright.
+            if '/' in s:
                 return None
             clean = _re.sub(r'[^\d\.]', '', s.strip())
             try:
@@ -517,57 +593,123 @@ class EcommerceCrawler:
 
         try:
             cards = await page.locator('[data-component-type="s-search-result"]').all()
+            if not cards:
+                page_title = await page.title()
+                page_url = page.url
+                logger.warning(
+                    f"0 search cards found — possible block. "
+                    f"title='{page_title}' url={page_url}"
+                )
             for card in cards:
                 try:
                     asin = await card.get_attribute('data-asin')
                     if not asin:
                         continue
 
-                    # Title: prefer the linked span inside h2 (product title),
-                    # not the h2 raw text which may contain brand-only storefront cards
+                    # Title — Amazon removed the <a> wrapper inside h2 in 2025,
+                    # so 'h2 a span' now returns 0 elements. Try selectors in order:
+                    # 1. h2 a span  (old structure — keep for any remaining cards)
+                    # 2. h2 a       (intermediate structure)
+                    # 3. h2         (current structure — confirmed working Apr 2025)
                     title = None
-                    title_span = card.locator('h2 a span')
-                    if await title_span.count() > 0:
-                        title = (await title_span.first.text_content() or '').strip() or None
-                    if not title:
-                        h2 = card.locator('h2')
-                        if await h2.count() > 0:
-                            title = (await h2.first.text_content() or '').strip() or None
-                    # Skip brand-only results (fewer than 3 words or under 15 chars)
+                    for _title_sel in ('h2 a span', 'h2 a', 'h2'):
+                        _el = card.locator(_title_sel)
+                        if await _el.count() > 0:
+                            _txt = (await _el.first.text_content() or '').strip()
+                            if _txt:
+                                title = _txt
+                                break
+                    # Skip brand-only storefront cards (< 3 words or < 15 chars)
                     if title and (len(title) < 15 or len(title.split()) < 3):
                         continue
 
-                    # Current price — collect ALL matching elements and take the
-                    # largest value >= $1.00.  Amazon cards contain multiple
-                    # .a-offscreen nodes: the real pack/product price ($27.99)
-                    # AND per-unit prices ($0.03/count, $0.18/oz).  Using
-                    # .first would grab the unit price when it appears first in
-                    # the DOM, producing fake 96%-off discounts.  The actual
-                    # product price is always the largest value on the card.
+                    # Current price — tiered selector approach to avoid per-unit prices.
+                    # Amazon cards embed multiple .a-offscreen nodes (real price + per-unit
+                    # price like $/oz). Using max() can pick the wrong one when a per-unit
+                    # price exceeds the product price.
+                    #
+                    # Tier 1: data-a-size="xl" — Amazon's dedicated main-price size attribute.
+                    #   Single element, take directly (no aggregation needed).
+                    # Tier 2: .a-price:not(.a-text-price):not([data-a-size="mini"]) — exclude
+                    #   mini (per-unit) elements; take the FIRST match only.
+                    # Tier 3: broad selector — take min() of values >= $5 (heuristic: for
+                    #   items over $5 the real price is lower than inflated unit prices).
                     current_price = None
-                    price_els = card.locator('.a-price:not(.a-text-price) .a-offscreen')
-                    n_prices = await price_els.count()
-                    if n_prices > 0:
-                        price_candidates = []
-                        for _i in range(n_prices):
-                            v = _parse_price_str(await price_els.nth(_i).text_content())
-                            if v is not None and v >= 1.00:
-                                price_candidates.append(v)
-                        if price_candidates:
-                            current_price = max(price_candidates)
 
-                    # Original/list price (strikethrough) — same approach
-                    original_price = None
-                    orig_els = card.locator('.a-text-price .a-offscreen')
-                    n_orig = await orig_els.count()
-                    if n_orig > 0:
-                        orig_candidates = []
-                        for _i in range(n_orig):
-                            v = _parse_price_str(await orig_els.nth(_i).text_content())
+                    # Tier 1
+                    xl_els = card.locator('[data-a-size="xl"] .a-offscreen')
+                    if await xl_els.count() > 0:
+                        current_price = _parse_price_str(await xl_els.first.text_content())
+                        if current_price is not None and current_price < 1.00:
+                            current_price = None
+
+                    # Tier 2
+                    if current_price is None:
+                        t2_els = card.locator('.a-price:not(.a-text-price):not([data-a-size="mini"]) .a-offscreen')
+                        if await t2_els.count() > 0:
+                            v = _parse_price_str(await t2_els.first.text_content())
                             if v is not None and v >= 1.00:
-                                orig_candidates.append(v)
-                        if orig_candidates:
-                            original_price = max(orig_candidates)
+                                current_price = v
+
+                    # Tier 3 — same mini exclusion as Tier 2, but collects all
+                    # matches and uses min() to avoid high per-unit prices
+                    # (e.g. $537/oz) that survived the not-mini filter.
+                    if current_price is None:
+                        price_els = card.locator(
+                            '.a-price:not(.a-text-price):not([data-a-size="mini"]) .a-offscreen'
+                        )
+                        n_prices = await price_els.count()
+                        if n_prices > 0:
+                            price_candidates = []
+                            for _i in range(n_prices):
+                                v = _parse_price_str(await price_els.nth(_i).text_content())
+                                if v is not None and v >= 1.00:
+                                    price_candidates.append(v)
+                            if price_candidates:
+                                current_price = min(price_candidates)
+
+                    # Original/list price (strikethrough) — tiered approach.
+                    # Tier 1: data-a-size="b" is Amazon's standard for the comparison price.
+                    # Tier 2: broad .a-text-price selector — take the FIRST element only.
+                    # Sanity cap: discard if original_price > current_price * 4
+                    #   (inflated MSRP from a different pack size).
+                    original_price = None
+
+                    # Tier 1
+                    orig_b_els = card.locator('.a-text-price[data-a-size="b"] .a-offscreen')
+                    if await orig_b_els.count() > 0:
+                        v = _parse_price_str(await orig_b_els.first.text_content())
+                        if v is not None and v >= 1.00:
+                            original_price = v
+
+                    # Tier 2
+                    if original_price is None:
+                        orig_els = card.locator('.a-text-price .a-offscreen')
+                        if await orig_els.count() > 0:
+                            v = _parse_price_str(await orig_els.first.text_content())
+                            if v is not None and v >= 1.00:
+                                original_price = v
+
+                    # Sanity cap: reject inflated MSRPs
+                    if original_price is not None and current_price is not None:
+                        if original_price > current_price * 4:
+                            original_price = None
+
+                    # Unit-price guard: check the visible text of the .a-text-price
+                    # element for per-unit indicators like /oz, /fl oz, /count.
+                    # Amazon sometimes renders a per-unit comparison in a strikethrough
+                    # style — e.g., "($13.90/oz)" — which .a-offscreen strips to just
+                    # "$13.90", making it look like a real list price.
+                    if original_price is not None:
+                        try:
+                            _op_els = card.locator('.a-text-price')
+                            if await _op_els.count() > 0:
+                                _op_text = (await _op_els.first.text_content() or '').lower()
+                                if any(ind in _op_text for ind in _UNIT_INDICATORS):
+                                    original_price = None
+                                    logger.debug(f"Discarded per-unit original_price for {asin}")
+                        except Exception:
+                            pass
 
                     # Image — try src, data-src, srcset in order; skip Amazon's lazy-load placeholder
                     img_el = card.locator('.s-image')
@@ -585,33 +727,67 @@ class EcommerceCrawler:
                         continue
 
                     # ── Discount percentage ─────────────────────────────────
-                    # Priority 1: Amazon's own explicit badge ("-35%" or "35% off").
-                    #   This is the authoritative source — Amazon only shows this
-                    #   badge when the price is genuinely reduced vs. the recent
-                    #   selling price.  The strikethrough (.a-text-price) often
-                    #   reflects an inflated manufacturer list price (MSRP) that
-                    #   has never been the real selling price, leading to fake
-                    #   discounts (e.g. baby wipes showing "35% off" but the
-                    #   product page shows 5% off).
-                    # Priority 2: Fall back to price calculation ONLY when the
-                    #   savings are large enough that MSRP inflation can't explain
-                    #   them (≥50% AND ≥$10 absolute savings).
+                    # Priority 1: Amazon's own badge — authoritative.
+                    # Priority 2: Calculated from extracted prices — used as
+                    #   fallback when no badge is present but both prices are valid.
+                    #   The multi-tier price extraction + sanity cap above make
+                    #   the calculated value reliable enough to act on.
                     discount_pct = None
+                    _badge_discount = None  # set only when sourced from a badge
 
-                    badge_el = card.locator('.savingsPercentage')
-                    if await badge_el.count() > 0:
-                        badge_text = (await badge_el.first.text_content() or '').strip()
-                        m = _re.search(r'(\d+)', badge_text)
-                        if m:
-                            discount_pct = int(m.group(1))
+                    # Try all known badge selectors (Amazon rotates class names)
+                    for _badge_sel in (
+                        '.savingsPercentage',                        # most common: "-35%"
+                        '[data-a-badge-type="s-badge-icon-percent"]',
+                        '.a-badge-label .a-badge-text',
+                    ):
+                        badge_el = card.locator(_badge_sel)
+                        if await badge_el.count() > 0:
+                            badge_text = (await badge_el.first.text_content() or '').strip()
+                            m = _re.search(r'(\d+)', badge_text)
+                            if m:
+                                _badge_discount = int(m.group(1))
+                                discount_pct = _badge_discount
+                                break
 
-                    if discount_pct is None and original_price and original_price > current_price:
-                        calc_pct = int((1 - current_price / original_price) * 100)
-                        abs_savings = original_price - current_price
-                        # Only trust price-calculated discount when savings are
-                        # large enough that inflated list prices are unlikely
-                        if calc_pct >= 50 and abs_savings >= 10.0:
-                            discount_pct = calc_pct
+                    # Cross-validate badge % against extracted prices.
+                    # If badge says 40% off but prices imply only 5% off,
+                    # price extraction is unreliable — keep badge pct but
+                    # reconstruct original_price from the badge so the savings
+                    # calculation is consistent.
+                    if discount_pct is not None and current_price is not None and discount_pct < 100:
+                        if original_price is not None and original_price > 0:
+                            implied_pct = int((1 - current_price / original_price) * 100)
+                            if abs(implied_pct - discount_pct) > 25:
+                                # Prices don't match badge — reconstruct from badge
+                                original_price = round(current_price / (1 - discount_pct / 100), 2)
+                        else:
+                            # No original_price extracted — reconstruct from badge
+                            original_price = round(current_price / (1 - discount_pct / 100), 2)
+
+                    # Fallback: calculate discount from prices when no badge found.
+                    # Only used when both prices were cleanly extracted and survive
+                    # the sanity cap (original_price <= current_price * 4).
+                    if discount_pct is None and original_price is not None and current_price is not None:
+                        if original_price > current_price > 0:
+                            discount_pct = int((1 - current_price / original_price) * 100)
+
+                    # Final guard: a calculated discount > 80% with no Amazon badge
+                    # almost always means per-unit price contamination survived the
+                    # earlier filters (e.g., .a-offscreen contained just the number
+                    # without "/oz"). Clear the fake discount and original_price.
+                    if _badge_discount is None and discount_pct is not None and discount_pct > 80:
+                        logger.debug(
+                            f"Dropped {asin}: {discount_pct}% calculated discount "
+                            f"without badge — likely per-unit price contamination"
+                        )
+                        original_price = None
+                        discount_pct = None
+
+                    logger.info(
+                        f"CARD asin={asin} cur={current_price} orig={original_price} "
+                        f"disc={discount_pct}% | {title[:55]}"
+                    )
 
                     retailer_url = f"https://www.amazon.com/dp/{asin}"
                     products.append(ProductData(
@@ -720,6 +896,14 @@ class EcommerceCrawler:
                         if v <= current_price * 5:   # sanity cap: max 80% off from list
                             original_price = v
                         break  # found a candidate (even if discarded); stop looking
+
+            # Extract SKU from URL (e.g. /dp/ASIN for Amazon)
+            sku = await self._extract_sku(page, url)
+
+            # Extract main product image
+            image_url = await self._extract_attribute(
+                page, selectors.get("image", "#landingImage"), "src"
+            )
 
             # Check for coupons
             coupon_available = await self._detect_coupon(page, selectors.get("coupon", ".coupon"))
@@ -955,12 +1139,6 @@ class EcommerceCrawler:
                 "locale": "en-US",
                 "timezone_id": "America/New_York",
             }
-            context_options["extra_http_headers"] = {
-                "Referer": "https://www.google.com/",
-                "sec-ch-ua": '"Chromium";v="135", "Google Chrome";v="135", "Not-A.Brand";v="8"',
-                "sec-ch-ua-mobile": "?0",
-                "sec-ch-ua-platform": '"Windows"',
-            }
 
             if self.anti_blocking:
                 anti_blocking_options = await get_browser_context_options(self.anti_blocking)
@@ -973,6 +1151,11 @@ class EcommerceCrawler:
                 # Fallback to old proxy logic (simplified)
                 logger.warning("Using fallback proxy logic - anti-blocking not initialized")
                 # Note: Old proxy logic would go here, but it was empty
+
+            # Build headers consistent with the selected user agent
+            context_options["extra_http_headers"] = _build_request_headers(
+                context_options.get("user_agent", "")
+            )
 
             browser = await p.chromium.launch(**launch_options)
             context = await browser.new_context(**context_options)

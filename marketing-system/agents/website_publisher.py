@@ -106,6 +106,7 @@ def _render_deal(env: Environment, deal: dict, seo: dict) -> str:
         image_url       = deal.get("image_url", ""),
         category        = deal.get("category", "other"),
         slug            = deal.get("slug", ""),
+        fetched_at      = deal.get("fetched_at", ""),
         group_name      = GROUP_NAME,
         site_url        = SITE_URL,
         telegram_invite = TELEGRAM_INVITE,

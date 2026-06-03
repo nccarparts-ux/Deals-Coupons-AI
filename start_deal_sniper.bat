@@ -59,6 +59,14 @@ echo Starting Celery Worker...
 start "Celery Worker" cmd /k "cd /d %~dp0 && call venv\Scripts\activate.bat && python -m celery -A deal_sniper_ai.scheduler.celery_app worker --loglevel=info --pool=solo --queues=default,monitoring,coupons,analytics,glitches,affiliate,scoring,community,posting,growth,maintenance --hostname=worker@deals-sniper"
 ping 127.0.0.1 -n 6 >nul
 
+:: Dispatch immediate Amazon crawl — worker is up, push task directly to Redis
+echo Dispatching immediate Amazon crawl...
+python -c "from deal_sniper_ai.price_watch_grid.tasks import monitor_retailer; monitor_retailer.apply_async(args=('amazon',), queue='monitoring')"
+echo Immediate crawl dispatched.
+
+:: Delete stale celerybeat schedule files before starting beat
+del /f /q celerybeat-schedule celerybeat-schedule-shm celerybeat-schedule-wal 2>nul
+
 echo Starting Celery Beat...
 start "Celery Beat" cmd /k "cd /d %~dp0 && call venv\Scripts\activate.bat && python -m celery -A deal_sniper_ai.scheduler.celery_app beat --loglevel=info --schedule=celerybeat-schedule"
 ping 127.0.0.1 -n 4 >nul
@@ -66,10 +74,13 @@ ping 127.0.0.1 -n 4 >nul
 echo Starting API Server...
 start "API Server" cmd /k "cd /d %~dp0 && call venv\Scripts\activate.bat && python -m uvicorn deal_sniper_ai.api.main:app --host 127.0.0.1 --port 8001 --reload"
 
+echo Starting Marketing Pipeline...
+start "Marketing Pipeline" cmd /k "cd /d %~dp0 && venv\Scripts\python.exe marketing-system\run_all.py"
+
 echo.
 echo Deal Sniper AI is running!
 echo   Dashboard:    http://127.0.0.1:8001/dashboard
 echo   Social panel: http://127.0.0.1:8001/social
 echo.
-echo Close the four windows to stop (Redis, Celery Worker, Celery Beat, API Server).
+echo Close the five windows to stop (Redis, Celery Worker, Celery Beat, API Server, Marketing Pipeline).
 pause

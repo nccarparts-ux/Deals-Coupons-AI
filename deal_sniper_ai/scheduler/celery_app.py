@@ -9,7 +9,7 @@ import os
 from typing import Dict, Any
 from celery import Celery
 from celery.schedules import crontab
-from celery.signals import worker_ready, worker_shutdown
+from celery.signals import worker_ready, worker_shutdown, beat_init
 import yaml
 from pathlib import Path
 from dotenv import load_dotenv
@@ -317,9 +317,39 @@ def start_beat():
 
 # ── Lifecycle notifications ──────────────────────────────────────────────────
 
+_BEAT_SCHEDULE_FILES = [
+    'celerybeat-schedule',
+    'celerybeat-schedule-shm',
+    'celerybeat-schedule-wal',
+]
+
+
+def _delete_beat_schedule_files():
+    """Delete stale celerybeat schedule files (SQLite WAL artefacts)."""
+    import os
+    for fname in _BEAT_SCHEDULE_FILES:
+        try:
+            if os.path.exists(fname):
+                os.remove(fname)
+        except Exception:
+            pass
+
+
+@beat_init.connect
+def on_beat_init(sender, **kwargs):
+    """Delete stale schedule files when beat starts and register cleanup on exit."""
+    import atexit
+    _delete_beat_schedule_files()
+    atexit.register(_delete_beat_schedule_files)
+
+
 @worker_ready.connect
 def on_worker_ready(sender, **kwargs):
-    """Notify admin when the Celery worker comes online."""
+    """Notify admin when the Celery worker comes online and fire an immediate crawl."""
+    import logging
+    _log = logging.getLogger(__name__)
+
+    # Admin alert
     try:
         from deal_sniper_ai.monitoring.alerting import send_admin_alert_sync
         from datetime import datetime
@@ -333,8 +363,8 @@ def on_worker_ready(sender, **kwargs):
             skip_cooldown=True,
         )
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"Could not send startup alert: {e}")
+        _log.warning(f"Could not send startup alert: {e}")
+
 
 
 @worker_shutdown.connect

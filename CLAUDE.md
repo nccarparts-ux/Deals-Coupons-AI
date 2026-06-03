@@ -24,6 +24,10 @@
 - Amazon search results mix brand storefront cards (brand-only h2) with product cards — use `h2 a span` selector and skip titles < 15 chars or < 3 words
 - Webshare free datacenter proxies are all blocked by Amazon — not worth using; residential proxies (~$15/mo) work indefinitely
 - **Twitter API returns 402 on free tier** — all Twitter posting falls back to manual: saves `.txt` to `deal_sniper_ai/output/twitter/` and sends Telegram DM to owner
+- **`worker_ready` signal fires before broker transport is fully ready** — `apply_async` called from within it fails silently; dispatch startup tasks from `start_deal_sniper.bat` instead using `python -c "...apply_async(...)"` after a startup delay
+- **Global `task_time_limit=300` matches beat interval of 300s** — any long-running task will be killed on every run; override per-task with `@app.task(time_limit=N, soft_time_limit=M)` on the decorator
+- **Python 3.13 UnboundLocalError scoping**: if a variable is assigned *anywhere* in a function, Python marks it local for the *entire* scope — reading it before the assignment raises `UnboundLocalError`, not `NameError`. Caught silently at DEBUG level; always assign sentinel (`= None`) before any conditional assignment
+- **Amazon CDN URLs blocked by Telegram's `sendPhoto` fetcher** — Telegram's servers try to fetch the image from Amazon and get blocked. Fix: download image bytes ourselves (httpx with Chrome UA + Amazon Referer), then POST bytes as multipart to `sendPhoto`. Fallback to `sendMessage` text-only if download fails
 
 ## Key Paths
 - `deal_sniper_ai/config/config.yaml` — retailer configs, selectors, affiliate tag `bidyarddeal09-20`
@@ -44,7 +48,9 @@
 
 ## Pipeline (end-to-end working)
 ```
-monitor_retailer (Celery, every 5 min)
+start_deal_sniper.bat → python -c "monitor_retailer.apply_async('amazon')"  [immediate on startup]
+
+monitor_retailer (Celery, every 5 min, 4 categories/run rotating)
   → EcommerceCrawler.crawl_search_results()   [Playwright, domcontentloaded]
   → crawl_product_page()                       [wait_until=load, 8s selector wait]
   → _save_product()                            → products + price_history (Supabase)
@@ -96,10 +102,13 @@ Twitter engagement bot (every 90 min):
 
 ## Crawler (current state)
 - Amazon only (Walmart/Target disabled) — extracts from search cards, no individual page visits
-- 89 categories in config.yaml, 7 pages each, 35% min discount, 12h per-product cooldown
+- 91 categories in config.yaml, 7 pages each, 35% min discount, 12h per-product cooldown
+- **4 categories crawled per beat tick** (rotating via Redis key `crawler_category_index:amazon`); all 91 covered in ~23 runs (~2 hrs). Full 91-category crawl takes ~31 min — never attempt in a single task
+- Task time limit: `time_limit=420, soft_time_limit=360` on `monitor_retailer` decorator
 - Min post score: 80 — `instant_poster.py` scores and posts immediately on detection
 - 5 rotating post templates in `instant_poster.py`, all include `#ad`, times in EST/EDT
 - `"jewelry deals"` category returns brand storefronts — replaced with specific terms
+- Telegram image posting: TelegramPoster downloads image bytes with Chrome UA then uploads as multipart; falls back to text-only if download fails
 
 ## Viral Funnel (TikTok + Twitter)
 - `COMMENT_BAIT` injected into every deal CTA; `CLIFFHANGER_ENDINGS` for viral_potential >= 9

@@ -12,7 +12,9 @@ _env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=_env_path, override=True)
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_KEY"]
+# Use service role key if available (bypasses RLS for backend operations).
+# Falls back to SUPABASE_KEY for environments that haven't been updated yet.
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ["SUPABASE_KEY"]
 
 _client: Client | None = None
 

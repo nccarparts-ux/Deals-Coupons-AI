@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ seo_title }} | {{ group_name }}</title>
-  <meta name="description" content="{{ meta_description }}">
-  <link rel="canonical" href="{{ site_url }}/deals/{{ slug }}">
+  <title>L'Oreal Paris Revitalift Triple Power Eye Cream at 50% Off | Coupons, Deals & Steals</title>
+  <meta name="description" content="Get L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream at 50% off. Only $17.67 on Amazon. Pro retinol, hyaluronic acid & vitamin C reduce wrinkles and puffiness.">
+  <link rel="canonical" href="https://bidyarddeals.com/deals/loreal-paris-revitalift-triple-power-anti-aging-eye-cream-pr">
   <meta property="og:type" content="product">
-  <meta property="og:title" content="{{ seo_title }}">
-  <meta property="og:description" content="{{ meta_description }}">
-  <meta property="og:url" content="{{ site_url }}/deals/{{ slug }}">
-  {% if image_url %}<meta property="og:image" content="{{ image_url }}">{% endif %}
+  <meta property="og:title" content="L'Oreal Paris Revitalift Triple Power Eye Cream at 50% Off">
+  <meta property="og:description" content="Get L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream at 50% off. Only $17.67 on Amazon. Pro retinol, hyaluronic acid & vitamin C reduce wrinkles and puffiness.">
+  <meta property="og:url" content="https://bidyarddeals.com/deals/loreal-paris-revitalift-triple-power-anti-aging-eye-cream-pr">
+  <meta property="og:image" content="https://m.media-amazon.com/images/I/61pG4lTSWML._AC_UL320_.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ seo_title }}">
-  <meta name="twitter:description" content="{{ meta_description }}">
-  {% if image_url %}<meta name="twitter:image" content="{{ image_url }}">{% endif %}
-  {% if seo_keywords %}<meta name="keywords" content="{{ seo_keywords | join(', ') }}">{% endif %}
+  <meta name="twitter:title" content="L'Oreal Paris Revitalift Triple Power Eye Cream at 50% Off">
+  <meta name="twitter:description" content="Get L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream at 50% off. Only $17.67 on Amazon. Pro retinol, hyaluronic acid & vitamin C reduce wrinkles and puffiness.">
+  <meta name="twitter:image" content="https://m.media-amazon.com/images/I/61pG4lTSWML._AC_UL320_.jpg">
+  <meta name="keywords" content="L'Oreal Paris Revitalift, anti-aging eye cream, pro retinol, hyaluronic acid, vitamin C eye cream, reduce wrinkles, reduce puffiness, eye cream deal, 50% off eye cream">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -24,17 +24,17 @@
   {
     "@context": "https://schema.org/",
     "@type": "Product",
-    "name": {{ title | tojson }},
-    "description": {{ deal_description | tojson }},
-    "image": {{ image_url | tojson }},
-    "url": {{ amazon_url | tojson }},
+    "name": "L\u0027Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream, Pro Retinol, Hyaluronic Acid \u0026 Vitamin C, Reduce Wrinkles \u0026 Puffiness 0.5 fl. oz.",
+    "description": "Score the L\u0027Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream for just $17.67\u2014that\u0027s 50% off the regular $35.34. Packed with pro retinol, hyaluronic acid, and vitamin C, this 0.5 fl. oz. cream targets wrinkles and puffiness so you can look refreshed without breaking the bank.",
+    "image": "https://m.media-amazon.com/images/I/61pG4lTSWML._AC_UL320_.jpg",
+    "url": "https://www.amazon.com/dp/B008CT12G2?tag=bidyarddeal09-20",
     "brand": {"@type": "Brand", "name": "Amazon"},
     "offers": {
       "@type": "Offer",
       "priceCurrency": "USD",
-      "price": {{ price | tojson }},
+      "price": 17.67,
       "availability": "https://schema.org/InStock",
-      "url": {{ amazon_url | tojson }}
+      "url": "https://www.amazon.com/dp/B008CT12G2?tag=bidyarddeal09-20"
     }
   }
   </script>
@@ -44,30 +44,42 @@
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ site_url }}/"},
-      {"@type": "ListItem", "position": 2, "name": {{ category | tojson }}, "item": "{{ site_url }}/top-deals"},
-      {"@type": "ListItem", "position": 3, "name": {{ title | tojson }}, "item": "{{ site_url }}/deals/{{ slug }}"}
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://bidyarddeals.com/"},
+      {"@type": "ListItem", "position": 2, "name": "other", "item": "https://bidyarddeals.com/top-deals"},
+      {"@type": "ListItem", "position": 3, "name": "L\u0027Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream, Pro Retinol, Hyaluronic Acid \u0026 Vitamin C, Reduce Wrinkles \u0026 Puffiness 0.5 fl. oz.", "item": "https://bidyarddeals.com/deals/loreal-paris-revitalift-triple-power-anti-aging-eye-cream-pr"}
     ]
   }
   </script>
 
-  {% if faq_pairs %}
+  
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {% for q, a in faq_pairs %}
+      
       {
         "@type": "Question",
-        "name": {{ q | tojson }},
-        "acceptedAnswer": {"@type": "Answer", "text": {{ a | tojson }}}
-      }{% if not loop.last %},{% endif %}
-      {% endfor %}
+        "name": "What are the key ingredients in this eye cream?",
+        "acceptedAnswer": {"@type": "Answer", "text": "This eye cream features pro retinol, hyaluronic acid, and vitamin C to target wrinkles, puffiness, and dark circles."}
+      },
+      
+      {
+        "@type": "Question",
+        "name": "Is this a good deal?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Yes, it\u0027s 50% off the regular price of $35.34, making it just $17.67\u2014a great price for a triple-action anti-aging formula."}
+      },
+      
+      {
+        "@type": "Question",
+        "name": "How much product do you get?",
+        "acceptedAnswer": {"@type": "Answer", "text": "The jar contains 0.5 fl. oz. (15 ml) of eye cream."}
+      }
+      
     ]
   }
   </script>
-  {% endif %}
+  
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -193,15 +205,15 @@
     }
   </style>
 </head>
-<body data-fetched="{{ fetched_at }}">
+<body data-fetched="">
 
 <div id="expiredBanner" style="display:none;background:#f39c12;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;line-height:1.5;">
   This deal was posted more than 7 days ago &mdash; the price may have changed.
-  <a href="{{ amazon_url }}" target="_blank" rel="noopener nofollow sponsored" style="color:#fff;text-decoration:underline;margin-left:6px;">Check current price on Amazon &rarr;</a>
+  <a href="https://www.amazon.com/dp/B008CT12G2?tag=bidyarddeal09-20" target="_blank" rel="noopener nofollow sponsored" style="color:#fff;text-decoration:underline;margin-left:6px;">Check current price on Amazon &rarr;</a>
 </div>
 
 <div class="alert-bar">
-  FREE DEAL ALERTS &mdash; <a href="{{ telegram_invite }}" target="_blank" rel="noopener">Join our Telegram for instant notifications</a>
+  FREE DEAL ALERTS &mdash; <a href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener">Join our Telegram for instant notifications</a>
 </div>
 
 <header>
@@ -210,8 +222,8 @@
     <a href="/top-deals">Top Deals</a>
     <a href="/about">About</a>
     <a href="/blog">Blog</a>
-    <a href="{{ telegram_invite }}" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
-    {% if facebook_group and facebook_group != '#' %}<a href="{{ facebook_group }}" class="nav-fb" target="_blank" rel="noopener">Join Facebook</a>{% endif %}
+    <a href="https://t.me/Coupons_Deals_Steals" class="nav-tg" target="_blank" rel="noopener">Join Telegram</a>
+    <a href="https://www.facebook.com/groups/826906386379276" class="nav-fb" target="_blank" rel="noopener">Join Facebook</a>
   </nav>
 </header>
 
@@ -219,39 +231,37 @@
   <div class="breadcrumb">
     <a href="/">Home</a>
     <span>&rsaquo;</span>
-    <a href="/top-deals">{{ category | title }}</a>
+    <a href="/top-deals">Other</a>
     <span>&rsaquo;</span>
-    {{ title[:60] }}
+    L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream, 
   </div>
 </nav>
 
 <div class="container">
   <div class="deal-hero">
     <div class="deal-image">
-      {% if image_url %}
-        <img src="{{ image_url }}" alt="{{ title }} deal amazon" loading="lazy">
-      {% else %}
-        <div class="no-image">No image available</div>
-      {% endif %}
+      
+        <img src="https://m.media-amazon.com/images/I/61pG4lTSWML._AC_UL320_.jpg" alt="L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream, Pro Retinol, Hyaluronic Acid & Vitamin C, Reduce Wrinkles & Puffiness 0.5 fl. oz. deal amazon" loading="lazy">
+      
     </div>
     <div class="deal-info">
-      <div class="category-badge">{{ category }}</div>
-      <h1>{{ seo_h1 }}</h1>
+      <div class="category-badge">other</div>
+      <h1>Save 50% on L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream</h1>
 
       <div class="price-block">
-        <div class="price-now">${{ "%.2f" | format(price) if price else "N/A" }}</div>
-        {% if original_price and original_price != price %}
-        <div class="price-was">Was ${{ "%.2f" | format(original_price) }}</div>
-        {% endif %}
-        {% if discount_pct %}
-        <div class="discount-badge">{{ discount_pct }}% OFF</div>
-        {% endif %}
-        {% if price and original_price and original_price > price %}
-        <div class="savings-line">You save ${{ "%.2f" | format(original_price - price) }}</div>
-        {% endif %}
+        <div class="price-now">$17.67</div>
+        
+        <div class="price-was">Was $35.34</div>
+        
+        
+        <div class="discount-badge">50% OFF</div>
+        
+        
+        <div class="savings-line">You save $17.67</div>
+        
       </div>
 
-      <a href="{{ amazon_url }}" class="cta-btn" target="_blank" rel="noopener nofollow sponsored">
+      <a href="https://www.amazon.com/dp/B008CT12G2?tag=bidyarddeal09-20" class="cta-btn" target="_blank" rel="noopener nofollow sponsored">
         Get This Deal on Amazon &rarr;
       </a>
       <div class="cta-disclaimer">As an Amazon Associate we earn from qualifying purchases. #ad</div>
@@ -260,22 +270,32 @@
 
   <section>
     <h2>About This Deal</h2>
-    <div class="about-text">{{ deal_description }}</div>
+    <div class="about-text">Score the L'Oreal Paris Revitalift Triple Power Anti-Aging Eye Cream for just $17.67—that's 50% off the regular $35.34. Packed with pro retinol, hyaluronic acid, and vitamin C, this 0.5 fl. oz. cream targets wrinkles and puffiness so you can look refreshed without breaking the bank.</div>
   </section>
 
-  {% if faq_pairs %}
+  
   <section>
     <h2>Frequently Asked Questions</h2>
     <div class="faq-list">
-      {% for q, a in faq_pairs %}
+      
       <div class="faq-item">
-        <div class="faq-q">{{ q }}</div>
-        <div class="faq-a">{{ a }}</div>
+        <div class="faq-q">What are the key ingredients in this eye cream?</div>
+        <div class="faq-a">This eye cream features pro retinol, hyaluronic acid, and vitamin C to target wrinkles, puffiness, and dark circles.</div>
       </div>
-      {% endfor %}
+      
+      <div class="faq-item">
+        <div class="faq-q">Is this a good deal?</div>
+        <div class="faq-a">Yes, it's 50% off the regular price of $35.34, making it just $17.67—a great price for a triple-action anti-aging formula.</div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-q">How much product do you get?</div>
+        <div class="faq-a">The jar contains 0.5 fl. oz. (15 ml) of eye cream.</div>
+      </div>
+      
     </div>
   </section>
-  {% endif %}
+  
 
   <div class="signup-box">
     <h3>Get Deals Like This Free</h3>
@@ -289,7 +309,7 @@
   </div>
 
   <section>
-    <h2>More {{ category | title }} Deals</h2>
+    <h2>More Other Deals</h2>
     <div class="related-grid" id="relatedDeals">
       <div style="color:#aaa;font-size:14px">Loading deals...</div>
     </div>
@@ -298,10 +318,10 @@
   <div class="community-cta">
     <h2>Never Miss a Deal</h2>
     <p>Join our free communities for instant alerts on the best Amazon discounts.</p>
-    <a href="{{ telegram_invite }}" target="_blank" rel="noopener">Join Telegram</a>
-    {% if facebook_group and facebook_group != '#' %}
-    <a href="{{ facebook_group }}" class="fb-link" target="_blank" rel="noopener">Join Facebook Group</a>
-    {% endif %}
+    <a href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener">Join Telegram</a>
+    
+    <a href="https://www.facebook.com/groups/826906386379276" class="fb-link" target="_blank" rel="noopener">Join Facebook Group</a>
+    
   </div>
 </div>
 
@@ -311,14 +331,14 @@
   <a href="/about">About</a>
   <a href="/api/unsubscribe?email=">Unsubscribe</a>
   <p>Not affiliated with Amazon. Amazon and the Amazon logo are trademarks of Amazon.com, Inc.</p>
-  <p style="margin-top:4px">&copy; 2025 {{ group_name }}</p>
+  <p style="margin-top:4px">&copy; 2025 Coupons, Deals & Steals</p>
 </footer>
 
 <div class="sticky-social" aria-label="Social channels">
-  <a class="sticky-tg" href="{{ telegram_invite }}" target="_blank" rel="noopener" aria-label="Join Telegram">&#9992;<span> Telegram</span></a>
-  {% if facebook_group and facebook_group != '#' %}
-  <a class="sticky-fb" href="{{ facebook_group }}" target="_blank" rel="noopener" aria-label="Join Facebook">f<span> Facebook</span></a>
-  {% endif %}
+  <a class="sticky-tg" href="https://t.me/Coupons_Deals_Steals" target="_blank" rel="noopener" aria-label="Join Telegram">&#9992;<span> Telegram</span></a>
+  
+  <a class="sticky-fb" href="https://www.facebook.com/groups/826906386379276" target="_blank" rel="noopener" aria-label="Join Facebook">f<span> Facebook</span></a>
+  
 </div>
 
 <script>
@@ -364,8 +384,8 @@ document.getElementById('dealSignupForm').addEventListener('submit', function(e)
 });
 
 fetch('/deals.json').then(function(r) { return r.json(); }).then(function(deals) {
-  var cat = {{ category | tojson }};
-  var slug = {{ slug | tojson }};
+  var cat = "other";
+  var slug = "loreal-paris-revitalift-triple-power-anti-aging-eye-cream-pr";
   var related = deals.filter(function(d) { return d.category === cat && d.slug !== slug; }).slice(0, 3);
   var container = document.getElementById('relatedDeals');
   if (!related.length) { container.innerHTML = '<div style="color:#aaa;font-size:14px">No related deals yet.</div>'; return; }
